@@ -171,6 +171,8 @@ body{
 .ban-tag.blue{background:#e8f4fc;color:var(--info)}
 .ban-w{font-weight:800;color:var(--danger)}
 .ban-fix{font-size:12.5px;color:var(--success);font-weight:600;margin-top:3px}
+.ban-alt{font-size:12.5px;color:#2e9e6b;font-weight:700;margin-top:4px;padding:5px 8px;background:rgba(52,199,123,.09);border-radius:8px}
+.ban-ctx{font-size:12px;color:var(--info);font-weight:600;margin-top:2px}
 .advice-item{display:flex;gap:10px;padding:11px 4px;border-bottom:1px dashed rgba(255,255,255,.8)}
 .advice-item:last-child{border-bottom:none}
 .advice-n{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#3aa8e0,#5e8cf0);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -367,7 +369,7 @@ body{
     <div class="glass card">
       <div class="tool-head">
         <div class="card-title"><span class="t-icon">🚫</span>违禁词检测器</div>
-        <p class="card-desc">把要发的文案贴进来（视频文案 / 简介 / 私信 / 评论都行），一键扫出 <b>广告法违禁词、减肥承诺、引流违规词</b>，标红 + 给替换建议 + 合规评分。对应课程：第壹章「广告法红线」。</p>
+        <p class="card-desc">把要发的文案贴进来（视频文案 / 简介 / 私信 / 评论都行），一键扫出 <b>广告法违禁词、减肥承诺、引流违规词</b>，扫到就直接判 <b>违规</b>，每条给出 <b>规避说法 + 可替换词</b>。对应课程：第壹章「广告法红线」。</p>
       </div>
       <textarea id="ban-input" class="input-area" placeholder="例：7天瘦10斤！百分百有效，无效退款！加V:mr123456 马上瘦下来！"></textarea>
       <div class="input-footer"><span id="ban-count">0 字</span><span>支持简介 / 文案 / 私信 / 评论</span></div>
@@ -375,6 +377,7 @@ body{
         <span class="chip" data-t="7天瘦10斤！百分百有效，无效退款！加V:mr123456">翻车示范</span>
         <span class="chip" data-t="科学减脂，配合饮食和运动，很多人都说不错～想了解的私信我">合规示范</span>
         <span class="chip" data-t="我是郑州减脂顾问，帮200位姐妹调理过体质，不节食不反弹，想试的评论区扣1">进阶示范</span>
+        <span class="chip" data-t="藢信同号，薇❤在线，想了解的评论区聊～">谐音规避示范</span>
       </div>
       <button class="btn-primary" onclick="runBan()"><span class="btn-label">开始检测合规</span></button>
       <div class="res-area" id="ban-result"></div>
@@ -1061,22 +1064,24 @@ document.getElementById('quick-chips').addEventListener('click',function(e){
 <script>
 // ========== 通用：违禁词词典（课程广告法红线） ==========
 const BAN_RULES = [
-  // 引流违规：直接写微信/加微信/甩微信号
-  {cat:'引流违规', severity:3, words:['加我的微信','加你微信','加我微信','加微信','加微','加V','加v','加薇','vx','VX','薇信','威信','微❤','微♥','微信同号','+V','＋V','加微信直接','扫码加','v信','加我V','加我v','加威信','私信微信','私微信','我微信','发微信','微信发','微信找我','微信上聊','加一下微信','加下微信','微信号码','微信号是','留微信','给我微信','你微信'], fix:'平台禁止直接引流到微信。改走「私信我」引导，评论区扣1或主页简介承接，别在文案里写微信号。'},
+  // 引流违规：直接写微信/QQ/电话/主页引导（含谐音、符号、拼音变体）
+  {cat:'引流违规', severity:3, words:['加我的微信','加你微信','加我微信','加微信','加微','加V','加v','加薇','vx','VX','薇信','威信','微❤','微♥','微信同号','+V','＋V','加微信直接','扫码加','v信','加我V','加我v','加威信','私信微信','私微信','我微信','发微信','微信发','微信找我','微信上聊','加一下微信','加下微信','微信号码','微信号是','留微信','给我微信','你微信','微信扣我','微信滴滴','加卫星','卫星号','卫星同号','卫星聊','薇❤','威❤','威信同号','v❤','飞鸽','企鹅号','企鹅','QQ号','扣扣','加扣','加扣扣','加QQ','QQ同号','电话同号','手机同号','联系号码','手机号','联系方式','主页薇','主页V','主页v','主页微信','主页找我','简介找我','加我卫星'], fix:'平台禁止直接引流到微信。改走「私信我」引导，评论区扣1或主页简介承接，别在文案里写微信号。', alt:'薇❤ / 徵信 / 藢信 / 微★ / 薇★（同音字+符号变体，别写「微信」全称）'},
   // 效果承诺：具体天数+具体减重数字（例：三天减五斤）
-  {cat:'效果承诺', severity:3, type:'regex', regex:/([0-9一二三四五六七八九十两]+)\s*[天日周月年]\s*.{0,6}?[瘦减]\s*([0-9一二三四五六七八九十两]+)\s*[斤公斤kg]/gi, msg:'「X天减X斤」类具体时间+具体减重数字的承诺', fix:'删掉具体天数和斤数，改为「循序渐进」「配合饮食运动管理体重」'},
-  // 效果承诺：关键词
-  {cat:'效果承诺', severity:3, words:['几天瘦','7天瘦','10天瘦','15天瘦','一个月瘦','暴瘦','极速瘦身','快速瘦身','轻松瘦','躺着瘦','保证瘦','瘦成闪电','一周瘦','立瘦','秒瘦','不反弹','永久瘦','彻底瘦','想瘦就瘦','狂瘦','保准瘦','一定能瘦','肯定瘦','三天减','三天瘦','五天瘦','七天瘦','月瘦','年瘦','瘦X斤','减X斤','包瘦','必瘦'], fix:'改为「科学减脂」「配合饮食和运动」「循序渐进」，不承诺具体效果'},
-  // 绝对化/保证用语
-  {cat:'绝对化用语', severity:3, words:['最有效','最安全','最好','第一','顶级','唯一','绝无仅有','百分百','100%','100%有效','绝对','彻底','根治','万能','包治','100%瘦','保准','保证','肯定','一定','绝对瘦','绝对有效','必然','必定'], fix:'改为「我自己用了觉得不错」「很多人反馈不错」，删掉绝对化词'},
+  {cat:'效果承诺', severity:3, type:'regex', regex:/([0-9一二三四五六七八九十两]+)\s*[天日周月年]\s*.{0,6}?[瘦减减]\s*([0-9一二三四五六七八九十两]+)\s*[斤公斤kg]/gi, msg:'「X天减X斤」类具体时间+具体减重数字的承诺', fix:'删掉具体天数和斤数，改为「循序渐进」「配合饮食运动管理体重」', alt:'「配合饮食和运动，循序渐进」「我自己坚持了两个月，感觉不错」'},
+  // 效果承诺：关键词（快速见效类）
+  {cat:'效果承诺', severity:3, words:['几天瘦','7天瘦','10天瘦','15天瘦','一个月瘦','暴瘦','极速瘦身','快速瘦身','轻松瘦','躺着瘦','保证瘦','瘦成闪电','一周瘦','立瘦','秒瘦','不反弹','永久瘦','彻底瘦','想瘦就瘦','狂瘦','保准瘦','一定能瘦','肯定瘦','三天减','三天瘦','五天瘦','七天瘦','月瘦','年瘦','瘦X斤','减X斤','包瘦','必瘦','立竿见影','马上见效','立刻见效','当天见效','当天瘦','速效','特效','奇效','神效','无效退款','无效包退','没效果退钱','效果立现','几天见效','快速见效','瘦成纸片人','暴瘦10斤','狂减','极速减脂','急速瘦','瘦腿霜','瘦腰霜','瘦肚子','躺瘦','睡瘦','7天见效','3天见效'], fix:'改为「科学减脂」「配合饮食和运动」「循序渐进」，不承诺具体效果和天数', alt:'「科学减脂」「体重管理」「配合饮食和运动」——删掉天数+斤数'},
+  // 绝对化/保证用语（广告法红线）
+  {cat:'绝对化用语', severity:3, words:['最有效','最安全','最好','第一','顶级','唯一','绝无仅有','百分百','100%','100%有效','绝对','彻底','根治','万能','包治','100%瘦','保准','保证','肯定','一定','绝对瘦','绝对有效','必然','必定','首选','最佳','最优','最强','国家级','世界级','全球第一','全网第一','全国第一','销量第一','排名第一','首选品牌','冠军','领导品牌','王牌','无敌','完美','极致','一流','顶尖','巅峰','最权威','资深','独家','首创','领先','领导者','行业标杆','行业第一','NO.1','No.1','TOP1','天花板','零差评','史上最强','史上最','最火','最牛','最便宜','最低价','全网最低'], fix:'改为「我自己用了觉得不错」「很多人反馈不错」，删掉「最/第一/100%」这类绝对化词', alt:'「我自己用下来感觉不错」「很多朋友反馈说挺好」——主观感受，别下结论'},
   // 减肥服务/产品暗示
-  {cat:'减肥服务暗示', severity:2, words:['减肥方案','减脂方案','瘦身方案','减肥计划','减肥食谱','减肥药','减肥茶','减肥产品','减肥仪器','减肥机构','减肥中心','减肥训练营','减肥指导','减肥教练','私人定制减肥','定制减肥','减肥套餐','减肥服务'], fix:'避免把体重管理包装成医疗/专业服务，改为「饮食参考」「运动习惯分享」「体重管理经验」'},
+  {cat:'减肥服务暗示', severity:2, words:['减肥方案','减脂方案','瘦身方案','减肥计划','减肥食谱','减肥药','减肥茶','减肥产品','减肥仪器','减肥机构','减肥中心','减肥训练营','减肥指导','减肥教练','私人定制减肥','定制减肥','减肥套餐','减肥服务','瘦身食谱','减脂餐','代餐','燃脂丸','酵素','青汁','瘦瘦包','中药减肥','拔罐减肥','埋线减肥','溶脂','纤体','塑形仪','瘦身霜','减脂营','瘦身营','减肥酵素','暴汗服','瘦瘦贴','燃脂膏','减肥课程','减脂课程','瘦身课程'], fix:'避免把体重管理包装成医疗/专业服务，改为「饮食参考」「运动习惯分享」「体重管理经验」', alt:'「饮食参考」「运动习惯分享」「体重管理经验」'},
   // 医疗暗示
-  {cat:'医疗暗示', severity:2, words:['治疗','药用','药物减肥','根治','针灸减肥','刮痧减肥','手术','药效','疗程','处方','治愈','调理','排毒','祛湿','燃脂','代谢','老中医','秘方'], fix:'减肥是体重管理不是医疗行为，删掉医疗词，改说「辅助减脂」「体重管理」'},
-  // 诱导留资
-  {cat:'诱导留资', severity:2, words:['加群领','加群送','转发领','点赞送','关注送','留手机号','填手机号','点击链接','下载app','进群领','扫码领','免费领取','免费送','限时免费','前100名','0元领','免费送','私信领','评论领'], fix:'引流话术往「私信我」引导，不要写具体领奖动作+联系方式'},
-  // 绝对收益
-  {cat:'绝对收益', severity:3, words:['稳赚','保赚','躺赚','日入','月入十万','年入百万','收益翻倍','稳赢','无风险投资','包赚'], fix:'收益类宣传必须真实可查，禁止承诺收益'}
+  {cat:'医疗暗示', severity:2, words:['治疗','药用','药物减肥','根治','针灸减肥','刮痧减肥','手术','药效','疗程','处方','治愈','调理','排毒','祛湿','燃脂','代谢','老中医','秘方','医院','医生','诊所','药方','理疗','康复','滋补','养生','药膳','气血','湿气','脾胃','内分泌','激素','副作用','临床','疗效','医学','中医','中药','疗效显著','药到病除'], fix:'减肥是体重管理不是医疗行为，删掉医疗词，改说「辅助减脂」「体重管理」', alt:'「辅助减脂」「体重管理」「科学饮食」——别用医疗词'},
+  // 诱导留资/过度引导互动
+  {cat:'诱导留资', severity:2, words:['加群领','加群送','转发领','点赞送','关注送','留手机号','填手机号','点击链接','下载app','进群领','扫码领','免费领取','免费送','限时免费','前100名','0元领','私信领','评论领','扣1领取','评论区扣1','扣666','点赞收藏转发','三连','福利群','资料群','粉丝群','内部群','私密群','限时抢购','仅限今日','最后一天','手慢无','先到先得','错过再等一年','点我头像','头像有惊喜','私信发你','私信领取','点击下方链接','主页链接','评论区扣','私信扣1','私信666'], fix:'引流话术往「私信我」引导，不要写具体领奖动作+联系方式', alt:'「想了解的私信我」「评论区聊，我看到都会回」'},
+  // 绝对收益（变现承诺）
+  {cat:'绝对收益', severity:3, words:['稳赚','保赚','躺赚','日入','月入十万','年入百万','收益翻倍','稳赢','无风险投资','包赚','日赚','月入过万','年入千万','一夜暴富','财富自由','轻松赚钱','副业月入','宝妈月入','在家赚钱','零成本赚钱','躺平赚钱','被动收入','睡后收入','稳定收益','高回报','稳赚不赔','稳赚稳赢','包教包会','学会就能赚钱','加盟就赚','躺赚月入'], fix:'收益类宣传必须真实可查，禁止承诺收益', alt:'「分享我的真实收入记录」「这是我实操的过程记录」——展示过程不承诺结果'},
+  // 直播/电商价格违规
+  {cat:'价格违规', severity:2, words:['全网最低价','史上最低','亏本卖','亏本清仓','清仓甩卖','跳楼价','骨折价','血亏','赔本卖','不买后悔','错过后悔','最后机会','仅剩X件','库存不多','爆款','销量王','好评如潮','零差评','五星好评','买一送一','第二件半价','假一赔十','正品保证','原装进口','进口原装','假一罚万','只赚口碑不赚钱','今天买最划算','错过就没了'], fix:'价格类宣传不要用「最低/亏本/清仓」等绝对化表述，库存用「目前只有少量现货」', alt:'「现在的价格比较实惠」「喜欢的朋友可以尽早入手」'}
 ];
 
 function scanBan(text){
@@ -1086,7 +1091,7 @@ function scanBan(text){
       rule.regex.lastIndex = 0;
       let m;
       while((m = rule.regex.exec(text)) !== null){
-        hits.push({cat:rule.cat, word:m[0], severity:rule.severity, fix:rule.fix || rule.msg});
+        hits.push({cat:rule.cat, word:m[0], severity:rule.severity, fix:rule.fix || rule.msg, alt:rule.alt});
         if(rule.regex.lastIndex === m.index) rule.regex.lastIndex++;
       }
     } else if(rule.words){
@@ -1095,7 +1100,7 @@ function scanBan(text){
         const lowerT = text.toLowerCase();
         let idx = lowerT.indexOf(lowerW);
         while(idx !== -1){
-          hits.push({cat:rule.cat, word:text.substring(idx, idx+w.length), severity:rule.severity, fix:rule.fix, pos:idx});
+          hits.push({cat:rule.cat, word:text.substring(idx, idx+w.length), severity:rule.severity, fix:rule.fix, alt:rule.alt, pos:idx});
           idx = lowerT.indexOf(lowerW, idx + Math.max(1, w.length));
         }
       });
@@ -1155,38 +1160,42 @@ function scanBan(text){
   return filtered;
 }
 
-function banScore(hits){
-  let score = 100;
-  hits.forEach(h=>{
-    // severity 1 提示扣4分，2 扣8分，3 扣12分
-    score -= (h.severity === 1 ? 4 : h.severity === 2 ? 8 : 12);
-  });
-  return Math.max(0, Math.min(100, score));
-}
-
-function banResultHTML(hits, score, target){
+function banResultHTML(hits){
+  // 语境降级为「提示」的（severity 1）不算违规，只提醒；其余命中一律直接判违规
+  const viol = hits.filter(h=>h.severity>=2);
+  const warns = hits.filter(h=>h.severity===1);
   let html = '';
-  html += `<div class="score-big">
-    <div class="num" style="color:${score>=90?'var(--success)':score>=60?'var(--warning)':'var(--danger)'}">${score}</div>
-    <div class="lbl">合规评分 / 100${score>=90?' · 合规，放心发':score>=60?' · 有风险，先改再发':' · 高危，改了才能发'}</div>
-  </div>`;
-  if(hits.length === 0){
-    html += '<div class="advice-item"><span class="advice-n">✓</span><div class="advice-t">没有扫到违禁词。保持这个标准，另外提醒：即使没违禁词，也别在同一条视频下重复发同样的话术（重复话术也是风控点）。</div></div>';
-  } else {
-    html += `<div style="font-size:13px;font-weight:700;margin-bottom:8px">扫到 ${hits.length} 处风险（按语境判断，不只关键词匹配）：</div>`;
-    hits.slice(0,12).forEach(h=>{
-      const tagColor = h.severity>=3 ? 'red' : h.severity===2 ? 'orange' : 'blue';
-      const sevLabel = h.severity>=3 ? '高危' : h.severity===2 ? '谨慎' : '提示';
-      html += `<div class="ban-item">
-        <span class="ban-tag ${tagColor}">${h.cat} · ${sevLabel}</span>
-        <div>
-          <div style="font-size:13px">命中词：<span class="ban-w">${esc(h.word)}</span></div>
-          ${h.ctxNote ? `<div class="ban-fix" style="color:var(--info);font-size:12px">语境判断：${esc(h.ctxNote)}</div>` : ''}
-          <div class="ban-fix">替换建议：${esc(h.fix)}</div>
-        </div>
-      </div>`;
-    });
+  if(viol.length===0 && warns.length===0){
+    html += `<div class="score-big">
+      <div class="num" style="color:var(--success)">✓</div>
+      <div class="lbl" style="color:var(--success);font-size:15px;font-weight:800">未发现违规词，这条文案可以发</div>
+    </div>
+    <div class="advice-item"><span class="advice-n">✓</span><div class="advice-t">保持这个标准。另外提醒：即使没违禁词，也别在同一条视频下重复发同样的话术（重复话术也是风控点）。</div></div>`;
+    return html;
   }
+  if(viol.length>0){
+    html += `<div class="score-big">
+      <div class="num" style="color:var(--danger)">✗</div>
+      <div class="lbl" style="color:var(--danger);font-size:15px;font-weight:800">检测到 ${viol.length} 处违规内容，这条文案不能直接发！</div>
+    </div>`;
+  } else {
+    html += `<div class="score-big">
+      <div class="num" style="color:var(--warning)">!</div>
+      <div class="lbl" style="color:var(--warning);font-size:15px;font-weight:800">有 ${warns.length} 处敏感表述，建议改一下再发</div>
+    </div>`;
+  }
+  [...viol, ...warns].slice(0,12).forEach(h=>{
+    html += `<div class="ban-item">
+      <span class="ban-tag red">${esc(h.cat)}</span>
+      <div style="flex:1">
+        <div style="font-size:13px">命中词：<span class="ban-w">${esc(h.word)}</span></div>
+        ${h.ctxNote ? `<div class="ban-ctx">语境：${esc(h.ctxNote)}</div>` : ''}
+        <div class="ban-fix">💡 怎么改：${esc(h.fix)}</div>
+        ${h.alt ? `<div class="ban-alt">✅ 可以换成：${esc(h.alt)}</div>` : ''}
+      </div>
+    </div>`;
+  });
+  html += `<div class="advice-item"><span class="advice-n">✓</span><div class="advice-t">统一规避口诀：<b>不承诺效果、不写绝对词、不直接留联系方式</b>。「微信」可以写成「徵 / 藢 / 薇❤ / vx / 卫星」，「100%瘦」改成「我自己觉得不错」——换个说法，效果照样有。</div></div>`;
   return html;
 }
 
@@ -1197,8 +1206,7 @@ function runBan(){
   if(!text){ alert('先把要检测的文案贴进来'); input.focus(); return; }
   showAnalyze('正在扫描违禁词…', ['分词拆解','广告法匹配','风控词匹配','生成报告'], function(){
     const hits = scanBan(text);
-    const score = banScore(hits);
-    document.getElementById('ban-result').innerHTML = banResultHTML(hits, score);
+    document.getElementById('ban-result').innerHTML = banResultHTML(hits);
     showRes('ban-result');
   });
 }
