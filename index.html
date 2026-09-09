@@ -3,36 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>迷人秀商业IP实操测试工具 · Liquid Glass</title>
+<title>迷人秀 · 抖音账号打造工具箱</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --text-1:#182338;--text-2:#3f5078;--text-3:#7c8aa8;
   --accent:#3aa8e0;--accent-deep:#2b8cc0;
-  --success:#2d9d6f;--warning:#cf9030;--danger:#d9554d;--info:#3aa8e0;
+  --success:#2d9d6f;--warning:#cf9030;--danger:#d9554d;
 }
 html,body{height:100%}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
   color:var(--text-1);
   overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  /* 底层背景：单一 linear-gradient，无光斑叠加，彻底消除色斑与分界线 */
   background:linear-gradient(165deg,#e7edfb 0%,#e9ecfb 38%,#e6f2f5 68%,#eef1fc 100%);
   min-height:100vh;
   background-attachment:scroll;
 }
+
 .stage{position:relative;max-width:920px;margin:0 auto;padding:34px 20px 56px}
 
-/* ============ 液态玻璃卡片 ============ */
+/* ============ 液态玻璃卡片（archisvaze 逐卡 feDisplacementMap 折射，滤镜区域=卡片尺寸，位移图小分辨率） ============ */
 .glass{
   position:relative;border-radius:32px;margin-bottom:20px;
   background:rgba(255,255,255,.16);
   border:1px solid rgba(255,255,255,.55);
   box-shadow:0 20px 50px rgba(30,40,110,.18), inset 0 1px 0 rgba(255,255,255,.9);
   transform:translateZ(0);
-  overflow:hidden;
+  overflow:hidden; /* 裁剪折射位移边缘，避免圆角"掉漆/黑边"伪影 */
   transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s;
 }
 .glass:hover{transform:translateY(-2px);box-shadow:0 26px 60px rgba(30,40,110,.22), inset 0 1px 0 rgba(255,255,255,.95)}
+/* 玻璃背景纹理层（JS 注入 .glass-bg）：backdrop blur 提供透底毛玻璃，
+   filter:url(#gN) 折射只作用该层纹理，文字/控件保持 100% 清晰 */
 .glass-bg{
   position:absolute;inset:-14px;border-radius:inherit;z-index:0;pointer-events:none;overflow:hidden;
   background:
@@ -41,6 +45,7 @@ body{
   box-shadow:inset 0 1px 1px rgba(255,255,255,.95), inset 0 -20px 34px -22px rgba(140,160,255,.6), inset 0 0 44px -14px rgba(255,255,255,.8);
   -webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
 }
+/* 触摸设备（手机/平板）：实时模糊降到轻量级，折射滤镜由 JS 跳过，保证滚动 60fps */
 @media (pointer:coarse){
   .glass-bg{
     -webkit-backdrop-filter:blur(7px) saturate(1.2);
@@ -52,6 +57,7 @@ body{
     backdrop-filter:blur(8px) saturate(1.1);
   }
 }
+/* 整卡顶部白高光（透明层，不影响文字） */
 .glass::after{
   content:'';position:absolute;inset:0;border-radius:inherit;
   z-index:1;pointer-events:none;
@@ -59,6 +65,7 @@ body{
     radial-gradient(90% 60% at 50% 0%, rgba(255,255,255,.34), rgba(255,255,255,0) 60%),
     linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 38%);
 }
+/* 液态玻璃边缘高光描边（左上亮、右下暗，水滴质感） */
 .glass::before{
   content:'';position:absolute;inset:0;border-radius:inherit;
   z-index:2;pointer-events:none;padding:1.2px;
@@ -66,38 +73,28 @@ body{
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude;
 }
+/* 折射滤镜由 JS 以 .gN{filter:url(#gN)} 动态挂载到 .glass-bg 背景层 */
+/* 内容浮于玻璃层之上（背景层除外） */
 .glass > *:not(.glass-bg){position:relative;z-index:1}
 
 /* ============ 头部 ============ */
-.header{text-align:center;padding:34px 30px 26px}
+.header{text-align:center;padding:34px 30px 28px}
 .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;font-size:12px;letter-spacing:.02em;color:var(--accent-deep);font-weight:700;margin-bottom:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 14px rgba(58,168,224,.18)}
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-.header h1{font-size:33px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:18px;
+.header h1{font-size:33px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:14px;
   background:linear-gradient(120deg,#3b4ca0 12%,#3aa8e0 50%,#35b8d8 90%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.header .subtitle{font-size:14.5px;color:var(--text-2);line-height:1.75;max-width:580px;margin:0 auto}
-.header .subtitle b{color:var(--accent-deep)}
+.header .subtitle{font-size:14.5px;color:var(--text-2);line-height:1.75;max-width:560px;margin:0 auto}
 
-/* ============ 合集导航 ============ */
-.tabbar{display:flex;gap:12px;padding:14px 16px;overflow-x:auto;flex-wrap:nowrap;position:sticky;top:10px;z-index:50;border-radius:24px}
-.tabbar::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--text-2);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);cursor:pointer;transition:all .22s;user-select:none;white-space:nowrap}
-.tab:hover{color:var(--accent-deep);border-color:rgba(58,168,224,.55);transform:translateY(-1px)}
-.tab.active{color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));border-color:transparent;box-shadow:0 8px 22px rgba(58,168,224,.35)}
-.tool-panel{display:none}
-.tool-panel.active{display:block;animation:fadeUp .5s cubic-bezier(.2,.8,.2,1)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
-
-/* ============ 卡片通用 ============ */
+/* ============ 卡片 ============ */
 .card{padding:26px}
 .card-title{font-size:18px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .card-title .t-icon{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(255,255,255,.6) inset}
-.card-desc{font-size:13px;color:var(--text-3);margin-bottom:18px;line-height:1.7}
-.tool-head .card-desc{margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--text-3);margin-bottom:18px;line-height:1.6}
 
 /* 输入区 */
-.input-area{width:100%;min-height:120px;padding:15px 17px;border-radius:18px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.5);font-size:14.5px;line-height:1.9;color:var(--text-1);outline:none;resize:vertical;transition:border-color .25s,box-shadow .25s}
+.input-area{width:100%;min-height:158px;padding:15px 17px;border-radius:18px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.5);font-size:14.5px;line-height:1.9;color:var(--text-1);outline:none;resize:vertical;transition:border-color .25s,box-shadow .25s}
 .input-area::placeholder{color:var(--text-3)}
 .input-area:focus{border-color:rgba(58,168,224,.55);box-shadow:0 0 0 5px rgba(58,168,224,.14)}
 .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--text-3)}
@@ -105,96 +102,26 @@ body{
 .chip{padding:6px 12px;border-radius:999px;font-size:12px;color:var(--text-2);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);cursor:pointer;transition:all .2s;user-select:none}
 .chip:hover{color:var(--accent-deep);border-color:rgba(58,168,224,.6);background:rgba(255,255,255,.9)}
 
-/* 按钮 */
-.btn-primary{display:block;width:100%;padding:18px;margin-bottom:20px;border:none;font-size:16px;font-weight:800;letter-spacing:.06em;color:#fff;cursor:pointer;text-align:center;border-radius:999px;position:relative;overflow:hidden;
-  background:linear-gradient(135deg,rgba(58,168,224,.9),rgba(79,142,247,.9));border:1px solid rgba(90,185,240,.35);
-  box-shadow:0 16px 36px rgba(58,168,224,.35);
-  -webkit-backface-visibility:hidden;backface-visibility:hidden;outline:1px solid transparent;
-  transition:background .25s, transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .25s}
-.btn-primary::before{content:"";position:absolute;left:4px;top:14%;bottom:14%;width:3px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));border-radius:999px;pointer-events:none;transition:opacity .25s}
-.btn-primary:hover{background:linear-gradient(135deg,rgba(78,196,250,.85),rgba(108,172,255,.85));border-color:rgba(120,210,255,.5);
-  box-shadow:0 20px 44px rgba(58,168,224,.42);transform:translateY(-1px)}
-.btn-primary:hover::before{opacity:1;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.9),rgba(255,255,255,0))}
+/* 预测按钮：深色液态玻璃按钮 */
+.btn-primary{display:block;width:100%;padding:18px;border:none;font-size:16px;font-weight:800;letter-spacing:.06em;color:#fff;cursor:pointer;text-align:center;border-radius:999px;
+  background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));border:1px solid rgba(255,255,255,.45);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.55), 0 16px 36px rgba(58,168,224,.35);
+  transition:filter .25s, transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .25s}
+.btn-primary:hover{filter:brightness(1.1);box-shadow:inset 0 1px 1px rgba(255,255,255,.6), 0 20px 44px rgba(58,168,224,.42)}
 .btn-primary:active{transform:scale(.97)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-label{position:relative;z-index:1;display:inline-block}
-.btn-secondary{display:block;width:100%;padding:14px;border:none;font-size:14.5px;font-weight:700;color:var(--accent-deep);cursor:pointer;text-align:center;border-radius:999px;position:relative;overflow:hidden;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.95);box-shadow:0 8px 20px rgba(30,40,110,.08);transition:all .25s;-webkit-backface-visibility:hidden;backface-visibility:hidden;outline:1px solid transparent}
-.btn-secondary::before{content:"";position:absolute;left:3px;top:12%;bottom:12%;width:3px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.8),rgba(255,255,255,0));border-radius:999px;pointer-events:none;transition:opacity .25s}
-.btn-secondary:hover{background:rgba(255,255,255,.88);box-shadow:0 10px 24px rgba(58,168,224,.18)}
-.btn-secondary:hover::before{opacity:1;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,1),rgba(255,255,255,0))}
-.btn-secondary:active{transform:scale(.97)}
 
-/* 表单 */
-.field{margin-bottom:15px}
-.field>label{display:block;font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:8px}
-.field>label .mini{font-weight:400;color:var(--text-3);font-size:11.5px}
-.input-num{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.55);font-size:14px;color:var(--text-1);outline:none;transition:border-color .25s,box-shadow .25s}
-.input-num:focus{border-color:rgba(58,168,224,.55);box-shadow:0 0 0 5px rgba(58,168,224,.14)}
-.num-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.opt-row{display:flex;flex-wrap:wrap;gap:8px}
-.opt{display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);cursor:pointer;transition:all .2s;font-size:13.5px;color:var(--text-1);user-select:none}
-.opt:hover{border-color:rgba(58,168,224,.55);background:rgba(255,255,255,.85)}
-.opt:has(input:checked){border-color:rgba(58,168,224,.7);background:rgba(58,168,224,.1);color:var(--accent-deep);font-weight:700}
-.opt input{accent-color:var(--accent);width:15px;height:15px}
-.opt-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
-.opt-list .opt{flex-direction:row;justify-content:flex-start;width:100%}
-
-/* 自定义下拉（液态玻璃风格） */
-.custom-select{position:relative;z-index:10}
-.select-display{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:14px;cursor:pointer;transition:all .25s;min-height:46px}
-.select-display .select-text{font-size:14px;color:var(--text-1);font-weight:500}
-.select-display .select-arrow{width:18px;height:18px;color:var(--text-2);transition:transform .25s;flex-shrink:0}
-.custom-select.open .select-arrow{transform:rotate(180deg)}
-.select-options{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;padding:6px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);box-shadow:0 18px 44px rgba(30,40,110,.18);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);z-index:20;animation:fadeUp .25s cubic-bezier(.2,.8,.2,1)}
-.custom-select.open .select-options{display:block}
-.select-option{padding:11px 12px;border-radius:12px;font-size:13.5px;color:var(--text-1);cursor:pointer;transition:all .2s}
-.select-option:hover{background:rgba(58,168,224,.12);color:var(--accent-deep)}
-.select-option.active{background:rgba(58,168,224,.16);color:var(--accent-deep);font-weight:700}
-
-/* 结果区 */
-.res-area{display:none;margin-top:18px;animation:fadeUp .6s cubic-bezier(.2,.8,.2,1)}
-.res-area.show{display:block}
-.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-bottom:14px}
-.res-cell{background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:14px 10px;text-align:center}
-.res-cell .v{font-size:23px;font-weight:900;letter-spacing:-.01em}
-.res-cell .k{font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.5}
-.res-cell .s{font-size:10.5px;font-weight:700;margin-top:4px}
-.s-ok{color:var(--success)}.s-warn{color:var(--warning)}.s-bad{color:var(--danger)}
-.score-big{text-align:center;padding:22px 14px;margin-bottom:14px}
-.score-big .num{font-size:52px;font-weight:900;line-height:1}
-.score-big .lbl{font-size:13px;color:var(--text-3);margin-top:6px}
-.ban-item{display:flex;gap:10px;padding:11px 4px;border-bottom:1px dashed rgba(255,255,255,.8);align-items:flex-start}
-.ban-item:last-child{border-bottom:none}
-.ban-tag{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
-.ban-tag.red{background:#fae9e8;color:var(--danger)}
-.ban-tag.orange{background:#fdf3df;color:var(--warning)}
-.ban-tag.blue{background:#e8f4fc;color:var(--info)}
-.ban-w{font-weight:800;color:var(--danger)}
-.ban-fix{font-size:12.5px;color:var(--success);font-weight:600;margin-top:3px}
-.ban-alt{font-size:12.5px;color:#2e9e6b;font-weight:700;margin-top:4px;padding:5px 8px;background:rgba(52,199,123,.09);border-radius:8px}
-.ban-ctx{font-size:12px;color:var(--info);font-weight:600;margin-top:2px}
-.advice-item{display:flex;gap:10px;padding:11px 4px;border-bottom:1px dashed rgba(255,255,255,.8)}
-.advice-item:last-child{border-bottom:none}
-.advice-n{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#3aa8e0,#5e8cf0);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.advice-t{font-size:13px;color:var(--text-2);line-height:1.65;flex:1}
-.quiz-q{font-size:16px;font-weight:800;padding:16px;border-radius:16px;background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.95);margin-bottom:14px;line-height:1.6}
-.quiz-fb{margin-top:14px;padding:14px 16px;border-radius:16px;font-size:13.5px;line-height:1.75;display:none}
-.quiz-fb.show{display:block;animation:fadeUp .4s}
-.quiz-fb.ok{background:rgba(45,157,111,.12);border:1px solid rgba(45,157,111,.35);color:var(--success)}
-.quiz-fb.no{background:rgba(217,85,77,.1);border:1px solid rgba(217,85,77,.35);color:var(--danger)}
-.flow-card{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:18px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);margin-bottom:12px}
-.flow-icon{width:44px;height:44px;border-radius:14px;background:rgba(58,168,224,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
-.flow-body h4{font-size:14.5px;font-weight:800;margin-bottom:4px}
-.flow-body p{font-size:12.5px;color:var(--text-2);line-height:1.65}
-.flow-body .mat{font-size:11.5px;color:var(--text-3);margin-top:5px;line-height:1.7}
-.verdict{text-align:center;font-size:15px;font-weight:800;padding:16px;border-radius:16px;margin-bottom:12px;letter-spacing:.02em}
-
-/* 5s 结果区（原版） */
+/* ============ 结果区 ============ */
 #result-section{display:none}
 #result-section.show{display:block;animation:fadeUp .7s cubic-bezier(.2,.8,.2,1)}
+/* 结果区卡片离屏不渲染（毛玻璃/滤镜均跳过），滚动只合成可见卡，显著提升帧率 */
 #result-section .glass{content-visibility:auto;contain-intrinsic-size:auto 460px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 .result-title{font-size:19px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .result-sub{font-size:12.5px;color:var(--text-3);margin-bottom:16px;line-height:1.7}
+
+/* 仪表盘 */
 .gauge-wrap{display:flex;align-items:center;gap:24px}
 .gauge{padding:16px}
 .gauge svg{width:100%;height:auto;display:block}
@@ -204,6 +131,8 @@ body{
 .rate-label{font-size:16px;font-weight:700;margin:12px 0 6px}
 .confidence{font-size:13px;color:var(--text-2)}
 .confidence b{color:var(--text-1)}
+
+/* 流量池 */
 .pool-card .card-title{margin-bottom:12px}
 .pool-stage{position:relative;padding-top:40px;margin:6px 0 8px}
 .pool-bar{position:relative;display:flex;height:38px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.75);box-shadow:inset 0 2px 8px rgba(30,40,110,.08);background:linear-gradient(90deg,#8f9bb3 0%,#4f8ef7 20%,#35b8d8 35%,#8a6ff0 50%,#e2609a 65%,#f2497b 80%,#f2497b 100%)}
@@ -216,6 +145,8 @@ body{
 .pool-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-3);margin:0 2px 6px;font-weight:600}
 .pool-name{font-size:13px;color:var(--text-2);font-weight:600}
 .pool-name b{color:var(--text-1)}
+
+/* 雷达图 */
 .radar-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .radar-wrap canvas{width:280px;height:280px;margin:0 auto;display:block}
 .radar-legend{flex:1;min-width:180px}
@@ -224,17 +155,23 @@ body{
 .r-dot{width:10px;height:10px;border-radius:4px;flex-shrink:0}
 .r-name{font-size:13px;color:var(--text-2);flex:1}
 .r-score{font-size:13px;font-weight:700}
+
+/* 维度分解 */
 .dim-bar-wrap{margin-bottom:16px}
 .dim-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .dim-bar-name{font-size:13.5px;font-weight:600}
 .dim-bar-score{font-size:12px}
 .dim-bar-track{height:9px;border-radius:6px;background:rgba(255,255,255,.6);overflow:hidden}
 .dim-bar-fill{height:100%;border-radius:6px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+
+/* 信号标签 */
 .feature-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .feature-tag{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:10px;font-size:12px;font-weight:600;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95)}
 .feature-tag.positive{color:var(--success)}
 .feature-tag.negative{color:var(--danger)}
 .feature-tag.neutral{color:var(--text-2)}
+
+/* 优化建议 */
 .suggestion-item{display:flex;gap:12px;padding:13px 4px;border-bottom:1px dashed rgba(255,255,255,.8)}
 .suggestion-item:last-child{border-bottom:none}
 .s-tag{padding:4px 10px;border-radius:8px;font-size:11.5px;font-weight:700;flex-shrink:0;height:fit-content}
@@ -242,10 +179,14 @@ body{
 .s-tag.mid{background:#fdf3df;color:var(--warning)}
 .s-title{font-size:13.5px;font-weight:700;margin-bottom:4px}
 .s-desc{font-size:12.5px;color:var(--text-2);line-height:1.6}
+
+/* 算法日志 */
 .algo-log{font-size:12px;color:var(--text-2);line-height:2.1;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95)}
+
+/* 页脚 */
 .footer-note{text-align:center;font-size:13px;color:var(--text-2);margin-top:18px;line-height:1.75}
 
-/* 分析中遮罩 */
+/* ============ 分析中遮罩（深色玻璃） ============ */
 .overlay{
   position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;
   background:rgba(26,30,60,.30);
@@ -259,6 +200,84 @@ body{
 .step.active{color:#fff;font-weight:700;transform:translateX(8px);box-shadow:0 6px 20px rgba(58,168,224,.4)}
 .step.done{color:#b8f4d8;font-weight:600;background:rgba(45,157,111,.25)}
 
+/* ============ 三合一工具箱 ============ */
+.tool-nav{display:flex;gap:8px;margin:0 0 22px;padding:6px;background:rgba(255,255,255,.30);border:1px solid rgba(255,255,255,.8);border-radius:20px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:sticky;top:10px;z-index:60;box-shadow:0 10px 30px rgba(30,40,110,.12),inset 0 1px 0 rgba(255,255,255,.95)}
+.tbtn{flex:1;padding:13px 6px;border:none;border-radius:15px;font-size:14px;font-weight:700;color:var(--text-2);background:transparent;cursor:pointer;transition:all .25s;letter-spacing:.01em;white-space:nowrap}
+.tbtn:hover{color:var(--text-1);background:rgba(255,255,255,.4)}
+.tbtn.active{color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.96),rgba(79,142,247,.96));box-shadow:0 8px 22px rgba(58,168,224,.42),inset 0 1px 1px rgba(255,255,255,.55)}
+.tool-panel{display:none}
+.tool-panel.active{display:block;animation:fadeUp .5s cubic-bezier(.2,.8,.2,1)}
+.portal-header{text-align:center;padding:30px 30px 26px;margin-bottom:20px}
+.portal-header h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-bottom:12px;background:linear-gradient(120deg,#3b4ca0 12%,#3aa8e0 50%,#35b8d8 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.h2-title{font-size:20px;font-weight:800;margin:4px 0 10px}
+.slim-head{padding:22px 26px;margin-bottom:20px}
+@media(max-width:640px){
+  .tool-nav{position:static;border-radius:16px;overflow-x:auto}
+  .tbtn{font-size:12.5px;padding:11px 4px;white-space:nowrap}
+  .portal-header h1{font-size:24px}
+}
+
+/* 向导通用 */
+.wz-progress{height:8px;border-radius:6px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);overflow:hidden;margin:4px 0 22px}
+.wz-bar{height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#3aa8e0,#5e8cf0);transition:width .4s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 12px rgba(58,168,224,.6)}
+.wz-step-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;color:var(--accent-deep);background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);margin-bottom:14px}
+.wz-q{font-size:17px;font-weight:800;line-height:1.5;margin-bottom:6px}
+.wz-desc{font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:16px}
+.wz-input{width:100%;min-height:96px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.55);font-size:14.5px;line-height:1.8;color:var(--text-1);outline:none;resize:vertical;transition:border-color .25s,box-shadow .25s;font-family:inherit}
+.wz-input:focus{border-color:rgba(58,168,224,.6);box-shadow:0 0 0 5px rgba(58,168,224,.14)}
+.wz-input-sm{min-height:70px}
+.wz-tri{display:grid;gap:12px}
+.wz-tri .tri-item label{display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px}
+.choice-grid{display:flex;flex-wrap:wrap;gap:9px}
+.choice{padding:11px 16px;border-radius:14px;font-size:13.5px;font-weight:600;color:var(--text-2);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);cursor:pointer;transition:all .2s;user-select:none;line-height:1.4}
+.choice:hover{border-color:rgba(58,168,224,.55)}
+.choice.sel{color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));border-color:transparent;box-shadow:0 6px 16px rgba(58,168,224,.35)}
+.choice-small{font-size:12.5px;padding:9px 13px}
+.wz-hint{font-size:12.5px;color:var(--text-3);margin-top:10px;line-height:1.6}
+.wz-nav{display:flex;gap:12px;margin-top:22px}
+.wz-nav .btn-primary{flex:1;padding:14px}
+.wz-back{flex:0 0 auto;padding:14px 26px;border:none;border-radius:999px;font-size:14px;font-weight:700;color:var(--text-2);background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);cursor:pointer;transition:all .2s}
+.wz-back:hover{background:rgba(255,255,255,.95)}
+.wz-back:disabled{opacity:.35;cursor:not-allowed}
+.finalize{display:none;border-top:1px dashed rgba(255,255,255,.9);margin-top:22px;padding-top:18px}
+
+/* 评估结果 */
+.eval-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.eval-ring{position:relative;width:108px;height:108px;flex-shrink:0}
+.eval-ring svg{transform:rotate(-90deg)}
+.eval-ring .ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:28px;background:linear-gradient(120deg,#3aa8e0,#5e8cf0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.eval-ring .ring-lb{font-size:10px;color:var(--text-3);font-weight:600;-webkit-text-fill-color:var(--text-3)}
+.eval-verdict{flex:1;min-width:200px}
+.eval-title{font-size:19px;font-weight:800;margin-bottom:6px}
+.eval-sub{font-size:13px;color:var(--text-2);line-height:1.7}
+.eval-list{margin-top:14px}
+.eval-list .li{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.85);font-size:13.5px;color:var(--text-1);line-height:1.6}
+.eval-list .li:last-child{border-bottom:none}
+.eval-list .li .mk{flex-shrink:0;font-weight:800}
+.mk.good{color:var(--success)}.mk.warn{color:var(--warning)}.mk.bad{color:var(--danger)}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.cta-mini{flex:1;min-width:150px;padding:13px 16px;border:none;border-radius:999px;font-size:13.5px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));box-shadow:0 8px 20px rgba(58,168,224,.3);transition:all .2s}
+.cta-mini:hover{filter:brightness(1.08)}
+.cta-mini.ghost{color:var(--accent-deep);background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);box-shadow:none}
+
+/* 实战题方案结果 */
+.plan-head{text-align:center;margin-bottom:6px}
+.plan-brand{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--accent-deep);margin-bottom:8px}
+.plan-title{font-size:22px;font-weight:900;line-height:1.35;margin-bottom:12px}
+.plan-pos{font-size:15px;font-weight:700;color:var(--text-1);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:16px 18px;margin-bottom:18px;line-height:1.8}
+.plan-pos b{color:var(--accent-deep)}
+.plan-block{margin-bottom:14px}
+.plan-sec{font-size:13px;font-weight:800;color:var(--accent-deep);letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.plan-sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(58,168,224,.4),transparent)}
+.plan-block .pa{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.85);font-size:13.5px;color:var(--text-1);line-height:1.7;white-space:pre-wrap}
+.plan-block .pa:last-child{border-bottom:none}
+.plan-block .pa .pa-q{color:var(--text-3);font-size:12px;display:block;margin-bottom:2px;font-weight:600}
+.plan-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.plan-tools button{flex:1;min-width:150px;padding:14px;border:none;border-radius:999px;font-size:14px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));box-shadow:0 8px 20px rgba(58,168,224,.3);transition:all .2s}
+.plan-tools button:hover{filter:brightness(1.08)}
+.plan-tools .ghost{color:var(--accent-deep);background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);box-shadow:none}
+.plan-copy-ok{color:var(--success);font-size:12px;font-weight:700;display:none;align-items:center;gap:5px}
+
 @media (max-width:640px){
   .header h1{font-size:26px}
   .gauge-wrap{flex-direction:column;gap:10px}
@@ -266,7 +285,6 @@ body{
   .stage{padding:26px 14px 50px}
   .card{padding:20px}
   .radar-wrap canvas{width:230px;height:230px}
-  .tab{padding:9px 14px;font-size:12px}
 }
 </style>
 </head>
@@ -274,178 +292,158 @@ body{
 
 <div class="stage">
 
-  <!-- 头部 -->
-  <header class="glass header">
-    <div class="badge"><span class="dot"></span>MIRENSHOW · 商业IP实操测试</div>
-    <h1>迷人秀商业IP实操测试工具</h1>
-    <p class="subtitle">4 个测试工具对应课程每一章：<b>测完就知道自己卡在哪，改完再测一遍</b>。5 秒完播率、违禁词、对标账号评估、起号方向——一个页面全搞定。</p>
-  </header>
+  <!-- 门户头部 -->
+  <div class="glass portal-header">
+    <div class="badge"><span class="dot"></span>迷人秀 · 商业IP · 账号起号工具箱</div>
+    <h1>抖音账号打造工具箱</h1>
+    <p class="subtitle">先测对标账号值不值得抄，再测第一句话的 5 秒完播率，最后跟着实战题做出你的 30 天账号方案。</p>
+  </div>
 
-  <!-- 导航 -->
-  <nav class="glass tabbar" id="tabbar">
-    <div class="tab active" data-p="p-5s">⏱ 5秒完播率</div>
-    <div class="tab" data-p="p-ban">🚫 违禁词检测</div>
-    <div class="tab" data-p="p-data">🎯 对标账号评估</div>
-    <div class="tab" data-p="p-dir">🧭 起号方向</div>
+  <!-- 工具导航 -->
+  <nav class="tool-nav" id="tool-nav">
+    <button class="tbtn active" data-panel="bench">🎯 对标账号评估</button>
+    <button class="tbtn" data-panel="predict">🎬 5秒完播率</button>
+    <button class="tbtn" data-panel="exam">📝 账号打造实战题</button>
   </nav>
 
-  <!-- ============ 工具1：5秒完播率预测 ============ -->
-  <section class="tool-panel active" id="p-5s">
+  <!-- ════════════ ① 对标账号评估（默认首屏） ════════════ -->
+  <section id="panel-bench" class="tool-panel active">
     <div class="glass card">
-      <div class="card-title"><span class="t-icon">✍️</span>第一步 · 填写你的视频开头</div>
-      <div class="card-desc">写下你视频的第一句话（开口前 5 秒的文案），越接近真实越好。对应课程：第柒章「开头3秒留人」。</div>
-      <textarea id="content-input" class="input-area" placeholder="例如：别再乱剪了！抖音 5 秒完播率，90% 的人的第一步就错了……"></textarea>
-      <div class="input-footer"><span id="char-count">0 字</span><span>建议 20 ~ 60 字</span></div>
-      <div class="chip-row" id="quick-chips">
-        <span class="chip" data-t="别再乱剪了！抖音5秒完播率，90%的人第一步就错了！">爆款示范</span>
-        <span class="chip" data-t="今天这期视频，一定要看到最后，结局绝了！">悬念开局</span>
-        <span class="chip" data-t="我用这3个方法，一周涨粉10万，方法都在这了。">干货开局</span>
-        <span class="chip" data-t="谁能想到，一只猫居然让我瞬间破防了…">情感开局</span>
+      <div class="card-title"><span class="t-icon">🎯</span>对标账号评估</div>
+      <div class="card-desc">填一个你准备长期拆解、模仿的对标账号，看看它到底值不值得抄、该抄什么、风险在哪。按你自己的判断选就行，不用查后台。</div>
+      <div class="wz-progress"><div class="wz-bar" id="b-bar" style="width:0%"></div></div>
+      <div id="b-body"></div>
+      <div class="wz-nav">
+        <button class="wz-back" id="b-back" disabled>← 上一步</button>
+        <button class="btn-primary" id="b-next" style="flex:1">下一步 →</button>
       </div>
-    </div>
-    <button class="btn-primary" id="glass-btn" onclick="runPrediction()"><span class="btn-label">开始预测完播率</span></button>
-    <section id="result-section">
-      <div class="glass card">
-        <div class="result-title">🏆 完播率预测结果</div>
-        <div class="result-sub">基于 7 维度文案分析 + 交互效应修正 + Sigmoid 概率映射</div>
-        <div class="gauge-wrap">
-          <div class="gauge">
-            <svg viewBox="0 0 220 120">
-              <defs>
-                <linearGradient id="grad" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#4f8ef7"/><stop offset="55%" stop-color="#35b8d8"/><stop offset="100%" stop-color="#e2609a"/>
-                </linearGradient>
-                <filter id="glowShadow"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              </defs>
-              <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="16" stroke-linecap="round"/>
-              <path id="gauge-arc" d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="url(#grad)" stroke-width="16" stroke-linecap="round" filter="url(#glowShadow)" style="stroke-dasharray:282.7;stroke-dashoffset:282.7;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)"/>
-            </svg>
-          </div>
-          <div class="gauge-meta">
-            <div class="rate-num" id="rate-num">0%</div>
-            <div class="rate-unit">预测5秒完播率</div>
-            <div class="rate-label" id="rate-label"></div>
-            <div class="confidence" id="confidence"></div>
-          </div>
-        </div>
-      </div>
-      <div class="glass card pool-card">
-        <div class="card-title">📶 流量池预估</div>
-        <div class="pool-stage" id="pool-stage">
-          <div class="pool-bubble" id="pool-bubble"></div>
-          <div class="pool-labels" id="pool-labels"></div>
-          <div class="pool-bar" id="pool-bar"></div>
-        </div>
-        <div class="pool-name" id="pool-name"></div>
-      </div>
-      <div class="glass card">
-        <div class="card-title">🧩 七维度雷达分析</div>
-        <div class="radar-wrap">
-          <canvas id="radar-canvas" width="320" height="320"></canvas>
-          <div class="radar-legend" id="radar-legend"></div>
-        </div>
-      </div>
-      <div class="glass card">
-        <div class="card-title">📋 维度拆解</div>
-        <div id="dim-breakdown"></div>
-      </div>
-      <div class="glass card">
-        <div class="card-title">🔔 文案信号识别</div>
-        <div class="feature-tags" id="feature-tags"></div>
-      </div>
-      <div class="glass card">
-        <div class="card-title">💡 优化建议</div>
-        <div id="suggestions"></div>
-      </div>
-      <div class="glass card">
-        <div class="card-title">⚙️ 算法推演过程</div>
-        <div class="algo-log" id="algo-breakdown"></div>
-      </div>
-    </section>
-  </section>
-
-  <!-- ============ 工具2：违禁词检测 ============ -->
-  <section class="tool-panel" id="p-ban">
-    <div class="glass card">
-      <div class="tool-head">
-        <div class="card-title"><span class="t-icon">🚫</span>违禁词检测器</div>
-        <p class="card-desc">把要发的文案贴进来（视频文案 / 简介 / 私信 / 评论都行），一键扫出 <b>广告法违禁词、减肥承诺、引流违规词</b>，扫到就直接判 <b>违规</b>，每条给出 <b>规避说法 + 可替换词</b>。对应课程：第壹章「广告法红线」。</p>
-      </div>
-      <textarea id="ban-input" class="input-area" placeholder="例：7天瘦10斤！百分百有效，无效退款！加V:mr123456 马上瘦下来！"></textarea>
-      <div class="input-footer"><span id="ban-count">0 字</span><span>支持简介 / 文案 / 私信 / 评论</span></div>
-      <div class="chip-row" id="ban-chips">
-        <span class="chip" data-t="7天瘦10斤！百分百有效，无效退款！加V:mr123456">翻车示范</span>
-        <span class="chip" data-t="科学减脂，配合饮食和运动，很多人都说不错～想了解的私信我">合规示范</span>
-        <span class="chip" data-t="我是郑州减脂顾问，帮200位姐妹调理过体质，不节食不反弹，想试的评论区扣1">进阶示范</span>
-        <span class="chip" data-t="藢信同号，薇❤在线，想了解的评论区聊～">谐音规避示范</span>
-      </div>
-      <button class="btn-primary" onclick="runBan()"><span class="btn-label">开始检测合规</span></button>
-      <div class="res-area" id="ban-result"></div>
+      <div class="finalize" id="b-result"></div>
     </div>
   </section>
 
-  <!-- ============ 工具5：数据指标计算器 ============ -->
-  <section class="tool-panel" id="p-data">
+  <!-- ════════════ ② 5秒完播率预测 ════════════ -->
+  <section id="panel-predict" class="tool-panel">
+
+  <!-- 预测器头部（收窄为面板内标题） -->
+  <div class="glass card slim-head">
+    <div class="badge"><span class="dot"></span>DOUYIN 5S RATE · AI 完播率预测器</div>
+    <h2 class="h2-title">🎬 第一句话，决定 5 秒完播率</h2>
+    <p class="card-desc" style="margin-bottom:0">输入你视频开口的第一句话，AI 自动拆解 7 个文案维度并预测 5 秒完播率，帮你写出留人的黄金开头。</p>
+  </div>
+
+  <!-- 输入卡片 -->
+  <div class="glass card" id="glass-input">
+    <div class="card-title"><span class="t-icon">✍️</span>第一步 · 填写你的视频开头</div>
+    <div class="card-desc">写下你视频的第一句话（视频开口前 5 秒的文案内容），越接近真实越好。</div>
+    <textarea id="content-input" class="input-area" placeholder="例如：别再乱剪了！抖音 5 秒完播率，90% 的人的第一步就错了……"></textarea>
+    <div class="input-footer"><span id="char-count">0 字</span><span>建议 20 ~ 60 字</span></div>
+    <div class="chip-row" id="quick-chips">
+      <span class="chip" data-t="别再乱剪了！抖音5秒完播率，90%的人第一步就错了！">爆款示范</span>
+      <span class="chip" data-t="今天这期视频，一定要看到最后，结局绝了！">悬念开局</span>
+      <span class="chip" data-t="我用这3个方法，一周涨粉10万，方法都在这了。">干货开局</span>
+      <span class="chip" data-t="谁能想到，一只猫居然让我瞬间破防了…">情感开局</span>
+    </div>
+  </div>
+
+  <!-- 预测按钮（文字包 span 以浮于玻璃背景层之上） -->
+  <button class="glass btn-primary" id="glass-btn" onclick="runPrediction()"><span class="btn-label">开始预测完播率</span></button>
+
+  <!-- 结果区 -->
+  <section id="result-section">
     <div class="glass card">
-      <div class="tool-head">
-        <div class="card-title"><span class="t-icon">🎯</span>对标账号评估</div>
-        <p class="card-desc">打开对标账号的主页，把 <b>获赞、粉丝、第一条发布时间、几天一更、视频总数</b> 填进来：赞粉比判断账号 <b>变现能力</b>（粉丝粘性），再算出 <b>平均每条作品的点赞数</b>——值不值得抄，一眼清楚。</p>
-      </div>
-      <div class="num-grid">
-        <div class="field" style="grid-column:1/-1"><label>数据单位 <span class="mini">获赞 / 粉丝默认按「万」填（支持小数点后两位，例：3.25 = 3.25万）；粉丝少的号可切回「个」直接填原始数字</span></label>
-          <div class="custom-select" id="d-unit-wrap">
-            <div class="select-display glass" tabindex="0">
-              <span class="select-text" data-value="wan">万（例：3.25 万 → 填 3.25）</span>
-              <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-            <div class="select-options">
-              <div class="select-option active" data-value="wan">万（例：3.25 万 → 填 3.25）</div>
-              <div class="select-option" data-value="num">个（直接填原始数字，例：32500）</div>
-            </div>
-            <select id="d-unit" style="position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;pointer-events:none">
-              <option value="wan" selected>万（例：3.25 万 → 填 3.25）</option>
-              <option value="num">个（直接填原始数字，例：32500）</option>
-            </select>
-          </div>
+      <div class="result-title">🏆 完播率预测结果</div>
+      <div class="result-sub">基于 7 维度文案分析 + 交互效应修正 + Sigmoid 概率映射</div>
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg viewBox="0 0 220 120">
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#4f8ef7"/><stop offset="55%" stop-color="#35b8d8"/><stop offset="100%" stop-color="#e2609a"/>
+              </linearGradient>
+              <filter id="glowShadow"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="16" stroke-linecap="round"/>
+            <path id="gauge-arc" d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="url(#grad)" stroke-width="16" stroke-linecap="round" filter="url(#glowShadow)" style="stroke-dasharray:282.7;stroke-dashoffset:282.7;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)"/>
+          </svg>
         </div>
-        <div class="field"><label>总获赞 <span class="mini">万为单位</span></label><input id="d-like" class="input-num" type="number" step="0.01" min="0" placeholder="例：3.25"></div>
-        <div class="field"><label>粉丝数 <span class="mini">万为单位</span></label><input id="d-fans" class="input-num" type="number" step="0.01" min="0" placeholder="例：1.20"></div>
-        <div class="field"><label>第一条发布时间</label><input id="d-first" class="input-num" type="date"></div>
-        <div class="field"><label>几天一更（更新频率）</label><input id="d-gap" class="input-num" type="number" placeholder="例：3（每3天一条）"></div>
-        <div class="field"><label>一共发了多少条视频</label><input id="d-total" class="input-num" type="number" placeholder="例：80"></div>
+        <div class="gauge-meta">
+          <div class="rate-num" id="rate-num">0%</div>
+          <div class="rate-unit">预测5秒完播率</div>
+          <div class="rate-label" id="rate-label"></div>
+          <div class="confidence" id="confidence"></div>
+        </div>
       </div>
-      <button class="btn-primary" onclick="runData()"><span class="btn-label">评估这个账号</span></button>
-      <div class="res-area" id="data-result"></div>
+    </div>
+
+    <div class="glass card pool-card">
+      <div class="card-title">📶 流量池预估</div>
+      <div class="pool-stage" id="pool-stage">
+        <div class="pool-bubble" id="pool-bubble"></div>
+        <div class="pool-labels" id="pool-labels"></div>
+        <div class="pool-bar" id="pool-bar"></div>
+      </div>
+      <div class="pool-name" id="pool-name"></div>
+    </div>
+
+    <div class="glass card">
+      <div class="card-title">🧩 七维度雷达分析</div>
+      <div class="radar-wrap">
+        <canvas id="radar-canvas" width="320" height="320"></canvas>
+        <div class="radar-legend" id="radar-legend"></div>
+      </div>
+    </div>
+
+    <div class="glass card">
+      <div class="card-title">📋 维度拆解</div>
+      <div id="dim-breakdown"></div>
+    </div>
+
+    <div class="glass card">
+      <div class="card-title">🔔 文案信号识别</div>
+      <div class="feature-tags" id="feature-tags"></div>
+    </div>
+
+    <div class="glass card">
+      <div class="card-title">💡 优化建议</div>
+      <div id="suggestions"></div>
+    </div>
+
+    <div class="glass card">
+      <div class="card-title">⚙️ 算法推演过程</div>
+      <div class="algo-log" id="algo-breakdown"></div>
     </div>
   </section>
 
-  <!-- ============ 工具4：起号方向推荐 ============ -->
-  <section class="tool-panel" id="p-dir">
+  </section><!-- /panel-predict -->
+
+  <!-- ════════════ ③ 账号打造实战题 ════════════ -->
+  <section id="panel-exam" class="tool-panel">
     <div class="glass card">
-      <div class="tool-head">
-        <div class="card-title"><span class="t-icon">🧭</span>起号方向推荐器</div>
-        <p class="card-desc">勾选你的资源条件（可多选），从课程讲的 <b>8 个起号方向</b> 里推荐「主方向 + 辅助方向」组合，附每天拍什么。对应课程：第伍章「起号方向」。</p>
+      <div class="card-title"><span class="t-icon">📝</span>账号打造实战题</div>
+      <div class="card-desc">不是考试，是把你的账号当场做出来。跟着一步一步填，最后自动生成一份完整的起号落地方案（可直接复制保存）。</div>
+      <div class="wz-progress"><div class="wz-bar" id="e-bar" style="width:0%"></div></div>
+      <div id="e-body"></div>
+      <div class="wz-nav">
+        <button class="wz-back" id="e-back" disabled>← 上一步</button>
+        <button class="btn-primary" id="e-next" style="flex:1">下一步 →</button>
       </div>
-      <div class="opt-list">
-        <label class="opt"><input type="checkbox" name="dir" value="d1"><span>① 我自己有减肥成功的经历</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d2"><span>② 身边有大体重亲友愿意出镜</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d3"><span>③ 我是本地实体商家 / 愿意跑门店地标</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d4"><span>④ 愿意做寻人启事这类互动玩法</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d5"><span>⑤ 想蹭热点模板</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d6"><span>⑥ 我有产品要展示</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d7"><span>⑦ 会用 AI 工具 / 不想出镜</span></label>
-        <label class="opt"><input type="checkbox" name="dir" value="d8"><span>⑧ 只想做图文</span></label>
-      </div>
-      <button class="btn-primary" onclick="runDir()"><span class="btn-label">推荐组合</span></button>
-      <div class="res-area" id="dir-result"></div>
+      <div class="finalize" id="e-result"></div>
     </div>
   </section>
+
+  <div class="footer-note">迷人秀 · 商业IP · 账号打造工具箱（Liquid Glass）<br>完播率为算法模拟，仅供创作参考，非抖音官方数据。填完的账号方案请自己备份一份。</div>
 </div>
 
-<!-- 分析中遮罩（通用） -->
+<!-- 分析中遮罩 -->
 <div class="overlay" id="overlay">
-  <div class="overlay-title" id="overlay-title">AI 正在分析…</div>
-  <div class="steps" id="overlay-steps"></div>
+  <div class="overlay-title">AI 正在分析…</div>
+  <div class="steps">
+    <div class="step" id="step-1"><span class="check"></span>句法拆解</div>
+    <div class="step" id="step-2"><span class="check"></span>钩子识别</div>
+    <div class="step" id="step-3"><span class="check"></span>情绪扫描</div>
+    <div class="step" id="step-4"><span class="check"></span>节奏评估</div>
+    <div class="step" id="step-5"><span class="check"></span>多维建模</div>
+  </div>
 </div>
 
 <!-- SVG 滤镜容器 -->
@@ -456,7 +454,15 @@ body{
 <script>
 /* =====================================================================
    液态玻璃引擎（archisvaze/liquid-glass 逐卡折射）
+   每个 .glass 卡片一个 SVG filter：
+     feGaussianBlur → feImage(位移图) → feDisplacementMap(折射)
+     → feColorMatrix(saturate) → feImage(高光图) → feComposite/feBlend
+   性能关键：
+     - 滤镜只作用于卡片自身小区域（非全屏），滚动时无需整屏重算
+     - 位移图/高光图用 0.2x 小分辨率，一次性生成并缓存
+     - 背景为纯静态渐变，无动画，不触发持续重绘
    ===================================================================== */
+
 function surfaceFn(x){ return Math.pow(1 - Math.pow(1 - x, 4), 0.25); }
 
 function calculateRefractionProfile(glassThickness, bezelWidth, ior, samples) {
@@ -491,6 +497,7 @@ function generateDisplacementMap(b, r, r1, rBSq, wB, hB, profile, maxDisp) {
   const img = ctx.createImageData(b, b);
   const d = img.data;
   for (let i = 0; i < d.length; i += 4) { d[i] = 128; d[i+1] = 128; d[i+2] = 0; d[i+3] = 255; }
+
   const r1Sq = (r + 1) ** 2;
   const S = profile.length;
   for (let y1 = 0; y1 < b; y1++) {
@@ -546,21 +553,28 @@ function generateSpecularMap(b, r, maxR, angle) {
 }
 
 const glassCache = new Map();
+
+// 触摸设备（手机/平板）：不挂 SVG 折射滤镜，仅保留轻量毛玻璃，保证滚动 60fps
 const IS_TOUCH = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
 function buildGlassFor(el, gid) {
+  // 玻璃背景层（静态渐变+高光）始终注入，毛玻璃由 CSS 负责
   let bg = el.querySelector('.glass-bg');
   if (!bg) {
     bg = document.createElement('div');
     bg.className = 'glass-bg';
     el.insertBefore(bg, el.firstChild);
   }
-  if (IS_TOUCH) return;
+  if (IS_TOUCH) return; // 触摸设备跳过 SVG 折射（feTurbulence 每帧重算，手机 GPU 扛不住）
+  // Chrome 的 feDisplacementMap in2 不支持引用 feImage(data:image/png)（位移恒为 0），
+  // 改用原生 feTurbulence 噪声作为位移源：确定性、全浏览器生效、零位图开销。
   const defs = document.getElementById('svg-defs');
   const old = defs.querySelector('#' + gid);
   if (old) old.remove();
+
   let seed = 1;
   try { seed = (Array.from(el.textContent).reduce((a,c)=>a+c.charCodeAt(0),0) % 89) + 1; } catch(e) {}
+
   const filterNode = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
   filterNode.setAttribute('id', gid);
   filterNode.setAttribute('x', '0%'); filterNode.setAttribute('y', '0%');
@@ -571,18 +585,21 @@ function buildGlassFor(el, gid) {
     '<feDisplacementMap in="blurred_source" in2="noise_map" scale="14" xChannelSelector="R" yChannelSelector="G" result="displaced" />' +
     '<feColorMatrix in="displaced" type="saturate" values="1.6" result="out" />';
   defs.appendChild(filterNode);
+
   bg.classList.add(gid);
   let styleEl = document.getElementById('glass-styles');
   if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'glass-styles'; document.head.appendChild(styleEl); }
   styleEl.textContent = styleEl.textContent.replace(new RegExp('\\\\.' + gid + '\\{[^}]*\\}', 'g'), '');
   styleEl.textContent += '\n.' + gid + '{filter:url(#' + gid + ');-webkit-filter:url(#' + gid + ');}';
+
   glassCache.set(gid, true);
 }
 
 window.__lgRefresh = function () {
+  // 为当前可见的全部玻璃卡构建/更新折射滤镜（结果卡显示后调用）
   const els = document.querySelectorAll('.glass');
   els.forEach((el, i) => {
-    if (el.offsetParent === null) return;
+    if (el.offsetParent === null) return; // 不可见跳过
     buildGlassFor(el, 'g' + i);
   });
 };
@@ -599,54 +616,12 @@ window.addEventListener('resize', function () {
 });
 
 window.addEventListener('DOMContentLoaded', function () {
+  // 首屏可见的玻璃卡先建滤镜
   window.__lgRefresh();
 });
-
-// ========== 通用：分析遮罩 ==========
-const OVERLAY = document.getElementById('overlay');
-const OV_TITLE = document.getElementById('overlay-title');
-const OV_STEPS = document.getElementById('overlay-steps');
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-async function showAnalyze(title, steps, fn){
-  OV_TITLE.textContent = title;
-  OV_STEPS.innerHTML = steps.map((s,i)=>`<div class="step" id="ovs-${i}"><span class="check"></span>${s}</div>`).join('');
-  OVERLAY.classList.add('show');
-  for(let i=0;i<steps.length;i++){
-    const el=document.getElementById('ovs-'+i);
-    el.classList.add('active');
-    await sleep(380+Math.random()*260);
-    el.classList.remove('active');el.classList.add('done');el.querySelector('.check').innerHTML='&#10003;';
-  }
-  await sleep(200);
-  OVERLAY.classList.remove('show');
-  fn();
-}
-
-// ========== 通用：面板切换 ==========
-document.getElementById('tabbar').addEventListener('click', function(e){
-  const tab = e.target.closest('.tab');
-  if(!tab) return;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  tab.classList.add('active');
-  document.querySelectorAll('.tool-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById(tab.getAttribute('data-p')).classList.add('active');
-  requestAnimationFrame(window.__lgRefresh);
-});
-
-// ========== 通用：结果容器 ==========
-function showRes(id){ const el=document.getElementById(id); el.classList.add('show'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ========== 通用：鼠标跟随光泽 ==========
-document.querySelectorAll('.glass').forEach(c=>{
-  c.addEventListener('mousemove',e=>{
-    const r=c.getBoundingClientRect();
-    c.style.setProperty('--mx',(e.clientX-r.left)+'px');
-    c.style.setProperty('--my',(e.clientY-r.top)+'px');
-  });
-});</script>
+</script>
 <script>
-// ========== 工具1：5秒完播率预测 ==========
+// ========== Dimension Definitions ==========
 const dimensions = [
   {key:'hook',name:'开场钩子力度',weight:0.30,desc:'第一句话前几个字是否直接上钩子'},
   {key:'curiosity',name:'好奇心缺口',weight:0.20,desc:'悬念/问题/信息缺口强度'},
@@ -657,6 +632,7 @@ const dimensions = [
   {key:'topic',name:'话题热度匹配',weight:0.05,desc:'热点/争议/搜索匹配'}
 ];
 
+// ========== Keyword Dictionaries ==========
 const keywordDict = {
   hook:{
     strong:['震惊','反转','你绝对想不到','最后','揭秘','真相','不敢相信','离谱','天啊','卧槽','绝了','笑死','绷不住','万万没想到','大跌眼镜','意想不到','神奇','惊呆','吓人','恐怖','惊险','刺激','冲突','矛盾','开撕','吵架','车祸','爆炸','意外','突发','紧急','速看','刚刚','刚刚发生','刚刚曝光','炸裂','破防','毁三观','上头','太上头了','杀疯了','瞳孔地震','头皮发麻','细思极恐','脊背发凉','无语','沉默','窒息','暴击','千万别','劝你','求你别','我劝','你敢信','你敢不敢','有谁知道','谁知道','家人们谁懂','谁懂','救命','疯了','假的吧','不可能','不是吧','我裂开','蚌埠住了','真的假的','还有这种事','这操作','神操作','骚操作','逆天'],
@@ -688,6 +664,7 @@ const keywordDict = {
   }
 };
 
+// ========== Modifiers ==========
 const categoryMods = {
   entertainment:{name:'娱乐搞笑',base:+3},
   knowledge:{name:'知识科普',base:-3},
@@ -699,7 +676,7 @@ const categoryMods = {
   fitness:{name:'运动健身',base:-1}
 };
 
-const accountWeight = 0.85;
+const accountWeight = 0.85; // fixed new account
 
 const poolTiers = [
   {min:0,max:20,name:'基础流量池',color:'#8f9bb3',desc:'几乎无扩散',range:'200-500播放'},
@@ -710,32 +687,56 @@ const poolTiers = [
   {min:80,max:101,name:'爆款流量池',color:'#f2497b',desc:'冲刺热门榜单',range:'100万+播放'}
 ];
 
+// ========== Text Analyzer (话术分析) ==========
 function analyzeText(text){
   const t = text.toLowerCase().replace(/\s+/g,'');
   const scores = {};
   const features = [];
   const reasons = {};
+
   dimensions.forEach(d=>{
     const dict = keywordDict[d.key];
-    let score = 5;
-    let strongHits = 0, weakHits = 0;
-    let matchedWords = [], weakWords = [];
-    dict.strong.forEach(w=>{ if(t.includes(w)){ strongHits++; matchedWords.push(w); } });
-    dict.weak.forEach(w=>{ if(t.includes(w)){ weakHits++; weakWords.push(w); } });
+    let score = 5; // baseline
+    let strongHits = 0;
+    let weakHits = 0;
+    let matchedWords = [];
+    let weakWords = [];
+
+    dict.strong.forEach(w=>{
+      if(t.includes(w)){
+        strongHits++;
+        matchedWords.push(w);
+      }
+    });
+    dict.weak.forEach(w=>{
+      if(t.includes(w)){
+        weakHits++;
+        weakWords.push(w);
+      }
+    });
+
     score += strongHits * 0.9;
     score -= weakHits * 1.1;
+
+    // ---- 抖音前5秒留人的核心规则 ----
     if(d.key === 'hook'){
+      // 黄金1秒：开头5个字内直接上钩子 = 大加分
       const first5 = t.slice(0,5);
       if(dict.strong.some(w=>first5.includes(w))) score += 2.0;
       const first10 = t.slice(0,10);
       if(dict.strong.some(w=>first10.includes(w))) score += 1.0;
+      // 铺垫式开场 = 扣分（前1秒没钩子，用户直接划走）
       if(/^(大家好|哈喽|嗨|hello|hi|你们好|朋友们|家人们|宝子们|姐妹们|兄弟们|老铁们|我是|我叫|今天|接下来|下面|然后|就是|其实|我跟你说|我跟你讲|欢迎|各位)/.test(t)) score -= 2.5;
+      // 疑问/感叹开头也有钩子感
       if(/^[!！?？]/.test(t) || /^(你敢信|你猜|你知道吗|谁知道|谁懂|真的假的|不是吧|救命)/.test(t)) score += 1.5;
     }
     if(d.key === 'curiosity'){
+      // 问号 = 好奇心缺口
       const q = (t.match(/[?？]/g)||[]).length;
       score += Math.min(q * 1.2, 2.4);
+      // 悬念词（结果/真相/为什么/最后……）= 信息缺口
       if(/为什么|到底|究竟|结果|真相|秘密|原来|居然|竟然|没想到|背后|原因|答案|揭秘|套路|猫腻|不对劲/.test(t)) score += 1.4;
+      // 句尾留白（省略号/未说完）也是缺口
       if(/…|\.\.\.|……/.test(t)) score += 0.5;
     }
     if(d.key === 'emotion'){
@@ -744,27 +745,35 @@ function analyzeText(text){
       if(/[?？]/.test(t)) score += 0.3;
     }
     if(d.key === 'density'){
+      // 数字具体化（金额/数量/时间）→ 可信度
       const numbers = (t.match(/\d/g)||[]).length;
       score += Math.min(numbers * 0.2, 1.6);
       if(/万|千|百|块|元|个|台|家|年|月|天|小时|斤|公斤|公里|%/.test(t)) score += 0.6;
     }
     if(d.key === 'rhythm'){
+      // 口语短句节奏：断句越多、句均字越少 → 节奏越紧凑
       const sentences = t.split(/[。！？!?，,；;、]+/).filter(Boolean).length;
       const avgLen = t.length / Math.max(sentences, 1);
       if(sentences >= 3) score += 1.2;
       if(avgLen <= 8) score += 1.2;
-      if(avgLen >= 18) score -= 1.4;
+      if(avgLen >= 18) score -= 1.4; // 一句话太长，口语念起来费劲，留不住人
+      // 口语连接词增加真实感
       if(/我跟你说|我告诉你|你听我说|讲真的|说真的|我跟你们讲/.test(t)) score += 0.8;
     }
     if(d.key === 'retention'){
       if(/最后|答案|结局|看到最后|别划走|别滑走|一定要|千万别|接下来|后面|揭秘|反转|没想到|重点来了|马上/.test(t)) score += 1.0;
+      // 句尾问号/省略号 = 勾住下一句
       if(/[?？…]$/.test(t)) score += 0.8;
     }
     if(d.key === 'topic'){
       if(/热搜|热点|爆火|全网|网友|热议|争议|刷屏|最新|突发|官方|冲上热搜|出圈/.test(t)) score += 1.0;
     }
+
+    // Clamp
     score = Math.max(1, Math.min(10, score));
     scores[d.key] = Math.round(score);
+
+    // Reason
     if(matchedWords.length > 0){
       reasons[d.key] = `识别到 ${matchedWords.slice(0,3).join('、')} 等正向信号`;
       matchedWords.forEach(w=>features.push({word:w,type:'positive',dim:d.name}));
@@ -775,16 +784,21 @@ function analyzeText(text){
       reasons[d.key] = '话术中该维度信号较弱，使用基准分';
     }
   });
+
+  // 额外中性特征（开场白通用信号）
   if(/\d+/.test(t)) features.push({word:'数字具体化',type:'neutral'});
   if(/[?？]/.test(t)) features.push({word:'提问留悬念',type:'neutral'});
   if(/[!！]/.test(t)) features.push({word:'感叹强化情绪',type:'neutral'});
   if(/^[你我他]/.test(t)) features.push({word:'人称直呼开场',type:'neutral'});
   if(t.length <= 8) features.push({word:'极短开场白',type:'neutral'});
+
   return {scores,features,reasons};
 }
 
+// ========== Prediction Model ==========
 function sigmoid(x){return 1/(1+Math.exp(-x));}
 
+// Auto-detect content category from text
 function detectCategory(text){
   const t = text.toLowerCase();
   const rules = [
@@ -793,7 +807,7 @@ function detectCategory(text){
     {key:'tech',name:'科技数码',words:['手机','电脑','科技','数码','AI','芯片','软件','app','苹果','华为','小米','耳机','相机']},
     {key:'emotion',name:'情感共鸣',words:['情感','感动','泪目','爱情','亲情','友情','分手','结婚','爸妈','妈妈','爸爸','孩子','破防','治愈','心疼']},
     {key:'beauty',name:'美妆穿搭',words:['美妆','穿搭','护肤','口红','化妆','粉底','眼影','衣服','裙子','发型','变美']},
-    {key:'fitness',name:'运动健身',words:['健身','减肥','减脂','减重','瘦身','减了','瘦','运动','肌肉','跑步','瑜伽','塑形','燃脂','身材','体重','斤','饮食']},
+    {key:'fitness',name:'运动健身',words:['健身','减肥','运动','瘦身','肌肉','跑步','瑜伽','塑形','燃脂','身材']},
     {key:'entertainment',name:'娱乐搞笑',words:['搞笑','段子','梗','神操作','整活','笑','沙雕','离谱','社死','综艺','明星','游戏']},
     {key:'lifestyle',name:'生活日常',words:['日常','上班','下班','通勤','老板','员工','同事','打工','租房','生活','vlog']}
   ];
@@ -803,40 +817,85 @@ function detectCategory(text){
     r.words.forEach(w=>{ if(t.includes(w)) hits++; });
     if(hits > best.score){ best = {key:r.key,name:r.name,score:hits}; }
   });
+  // Also expose detected words for the log
   const matched = [];
-  rules.forEach(r=>{ r.words.forEach(w=>{ if(t.includes(w)) matched.push(w); }); });
+  rules.forEach(r=>{
+    r.words.forEach(w=>{ if(t.includes(w)) matched.push(w); });
+  });
   return {key:best.key, name:best.name, matched:matched.slice(0,5)};
 }
 
 function predict(){
   const text = document.getElementById('content-input').value.trim();
   if(!text) throw new Error('请先填写5秒内容');
+
   const {scores,features,reasons} = analyzeText(text);
+
   const detectedCat = detectCategory(text);
   const catMod = categoryMods[detectedCat.key];
-  let weightedSum = 0, totalWeight = 0;
-  dimensions.forEach(d=>{ weightedSum += scores[d.key] * d.weight; totalWeight += d.weight; });
+
+  // Weighted score
+  let weightedSum = 0;
+  let totalWeight = 0;
+  dimensions.forEach(d=>{
+    weightedSum += scores[d.key] * d.weight;
+    totalWeight += d.weight;
+  });
   const weightedAvg = weightedSum / totalWeight;
+
+  // Interaction effects
   let interactionBonus = 0;
-  if(scores.hook >= 7 && scores.curiosity <= 4) interactionBonus -= 3;
+  if(scores.hook >= 7 && scores.curiosity <= 4) interactionBonus -= 3; // 钩子强但没悬念=断档
   if(scores.emotion >= 7 && scores.hook <= 5) interactionBonus += 1.5;
   if(scores.density >= 7 && scores.rhythm <= 4) interactionBonus -= 2;
   if(scores.retention >= 7 && scores.hook >= 7) interactionBonus += 2;
-  if(dimensions.every(d=>scores[d.key]>=7)) interactionBonus += 3;
-  if(dimensions.some(d=>scores[d.key]<=2)) interactionBonus -= 4;
+  const allHigh = dimensions.every(d=>scores[d.key]>=7);
+  if(allHigh) interactionBonus += 3;
+  const anyLow = dimensions.some(d=>scores[d.key]<=2);
+  if(anyLow) interactionBonus -= 4;
+
+  // Sigmoid mapping
   const normalized = (weightedAvg - 1) / 9;
   const sigmoidInput = (normalized - 0.5) * 6;
   const sigmoidValue = sigmoid(sigmoidInput + interactionBonus * 0.15);
+
   let baseRate = 10 + sigmoidValue * 80;
   baseRate += catMod.base;
   baseRate *= accountWeight;
   baseRate = Math.max(5, Math.min(95, baseRate));
+
   const variance = (Math.random() - 0.5) * 5;
   const finalRate = Math.round(Math.max(3, Math.min(96, baseRate + variance)));
   const lower = Math.max(3, finalRate - 3);
   const upper = Math.min(96, finalRate + 3);
+
   const pool = poolTiers.find(p=>finalRate>=p.min&&finalRate<p.max)||poolTiers[poolTiers.length-1];
+
   return {text,rate:finalRate,lower,upper,weightedAvg,interactionBonus,baseRate,scores,pool,catMod,detectedCat,features,reasons};
+}
+
+// ========== Rendering ==========
+function renderResults(result){
+  // Gauge
+  const gaugeArc = document.getElementById('gauge-arc');
+  const circumference = 2 * Math.PI * 85;
+  gaugeArc.style.strokeDashoffset = circumference * (1 - result.rate/100);
+  animateNumber('rate-num',0,result.rate,1200);
+
+  const rateLabel = document.getElementById('rate-label');
+  if(result.rate>=65){rateLabel.textContent='优秀 · 热门潜力';rateLabel.style.color='var(--accent)';}
+  else if(result.rate>=50){rateLabel.textContent='良好 · 有推荐潜力';rateLabel.style.color='var(--success)';}
+  else if(result.rate>=35){rateLabel.textContent='一般 · 需优化';rateLabel.style.color='var(--warning)';}
+  else{rateLabel.textContent='偏低 · 需大改';rateLabel.style.color='var(--danger)';}
+
+  document.getElementById('confidence').innerHTML = `置信区间: <b>${result.lower}% - ${result.upper}%</b> · 误差 ±3%`;
+
+  renderPoolBar(result.pool,result.rate);
+  drawRadar(result.scores);
+  renderDimBreakdown(result.scores,result.reasons);
+  renderFeatures(result.features);
+  renderSuggestions(result.scores);
+  renderAlgoBreakdown(result);
 }
 
 function animateNumber(id,from,to,duration){
@@ -857,8 +916,10 @@ function renderPoolBar(pool,rate){
   const labels=document.getElementById('pool-labels');
   const name=document.getElementById('pool-name');
   const bubble=document.getElementById('pool-bubble');
-  let segHtml='', labelHtml='';
-  const totalSpan = 101;
+
+  let segHtml='';
+  let labelHtml='';
+  const totalSpan = 101; // 各档跨度之和
   poolTiers.forEach(p=>{
     const span=p.max-p.min;
     const isCurrent=p.name===pool.name;
@@ -870,6 +931,7 @@ function renderPoolBar(pool,rate){
   bar.innerHTML=segHtml;
   labels.innerHTML=labelHtml;
   name.innerHTML=`<b>${pool.name}</b> · ${pool.range} · ${pool.desc}`;
+  // 当前档位气泡：定位到档位中心，颜色跟随档位色
   const centerPct=(pool.min+pool.max)/2/totalSpan*100;
   bubble.style.left=centerPct+'%';
   bubble.textContent=pool.name;
@@ -924,6 +986,7 @@ function drawRadar(scores){
     const name=dimensions[i].name.replace('力度','').replace('强度','').replace('匹配','').replace('设计','').replace('配合度','').replace('密度','密');
     ctx.fillText(name,x,y);
   }
+  // Radar legend
   (function(){
     const leg=document.getElementById('radar-legend');
     if(!leg)return;
@@ -961,6 +1024,7 @@ function renderDimBreakdown(scores,reasons){
 function renderFeatures(features){
   const container=document.getElementById('feature-tags');
   if(features.length===0){container.innerHTML='<span class="feature-tag">未识别到强信号</span>';return;}
+  // Deduplicate and limit
   const seen=new Set();
   const unique=[];
   features.forEach(f=>{
@@ -993,7 +1057,7 @@ function renderSuggestions(scores){
       const level=score<=3?'high':'mid';
       const tag=score<=3?'紧急':'建议';
       const tip=suggestionsDB[d.key][0];
-      html+=`<div class="suggestion-item"><div class="s-tag ${level}">${tag}</div><div><div class="s-title">${d.name} · 当前${score}/10</div><div class="s-desc">${tip}</div></div></div>`;
+      html+=`<div class="suggestion-item"><div class="s-tag ${level}">${tag}</div><div class="s-body"><div class="s-title">${d.name} · 当前${score}/10</div><div class="s-desc">${tip}</div></div></div>`;
     });
   }
   container.innerHTML=html;
@@ -1016,369 +1080,407 @@ function renderAlgoBreakdown(result){
   `;
 }
 
-function renderResults(result){
-  const gaugeArc = document.getElementById('gauge-arc');
-  const circumference = 2 * Math.PI * 85;
-  gaugeArc.style.strokeDashoffset = circumference * (1 - result.rate/100);
-  animateNumber('rate-num',0,result.rate,1200);
-  const rateLabel = document.getElementById('rate-label');
-  if(result.rate>=65){rateLabel.textContent='优秀 · 热门潜力';rateLabel.style.color='var(--accent)';}
-  else if(result.rate>=50){rateLabel.textContent='良好 · 有推荐潜力';rateLabel.style.color='var(--success)';}
-  else if(result.rate>=35){rateLabel.textContent='一般 · 需优化';rateLabel.style.color='var(--warning)';}
-  else{rateLabel.textContent='偏低 · 需大改';rateLabel.style.color='var(--danger)';}
-  document.getElementById('confidence').innerHTML = `置信区间: <b>${result.lower}% - ${result.upper}%</b> · 误差 ±3%`;
-  renderPoolBar(result.pool,result.rate);
-  drawRadar(result.scores);
-  renderDimBreakdown(result.scores,result.reasons);
-  renderFeatures(result.features);
-  renderSuggestions(result.scores);
-  renderAlgoBreakdown(result);
-}
-
+// ========== Run ==========
 async function runPrediction(){
   const btn=document.getElementById('glass-btn');
   const input=document.getElementById('content-input');
   if(!input.value.trim()){alert('请先输入你视频的第一句话');input.focus();return;}
+
   btn.disabled=true;
-  await showAnalyze('AI 正在分析完播率…', ['句法拆解','钩子识别','情绪扫描','节奏评估','多维建模'], function(){
-    const result=predict();
-    const section=document.getElementById('result-section');
-    section.classList.add('show');
-    renderResults(result);
-    section.scrollIntoView({behavior:'smooth',block:'start'});
-    requestAnimationFrame(window.__lgRefresh);
-  });
+  const overlay=document.getElementById('overlay');
+  overlay.classList.add('show');
+  const steps=[document.getElementById('step-1'),document.getElementById('step-2'),document.getElementById('step-3'),document.getElementById('step-4'),document.getElementById('step-5')];
+  steps.forEach(s=>{s.classList.remove('active','done');s.querySelector('.check').textContent='';});
+  for(let i=0;i<steps.length;i++){
+    steps[i].classList.add('active');
+    await sleep(600+Math.random()*300);
+    steps[i].classList.remove('active');steps[i].classList.add('done');steps[i].querySelector('.check').innerHTML='&#10003;';
+  }
+  await sleep(300);
+
+  const result=predict();
+  overlay.classList.remove('show');
+  const section=document.getElementById('result-section');
+  section.classList.add('show');
+  renderResults(result);
+  section.scrollIntoView({behavior:'smooth',block:'start'});
   btn.disabled=false;
+  // 通知液态玻璃引擎：结果区卡片已显示，重建折射滤镜
+  if(window.__lgRefresh) requestAnimationFrame(window.__lgRefresh);
 }
 
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ========== Char count ==========
 document.getElementById('content-input').addEventListener('input',function(){
   document.getElementById('char-count').textContent=this.value.length+' 字';
 });
+document.getElementById('char-count').textContent=document.getElementById('content-input').value.length+' 字';
+
+// 快捷文案 chips
 document.getElementById('quick-chips').addEventListener('click',function(e){
   const chip=e.target.closest('.chip');
   if(!chip)return;
   const ta=document.getElementById('content-input');
   ta.value=chip.getAttribute('data-t');
   document.getElementById('char-count').textContent=ta.value.length+' 字';
-});</script>
-<script>
-// ========== 通用：违禁词词典（课程广告法红线） ==========
-const BAN_RULES = [
-  // 引流违规：直接写微信/QQ/电话/主页引导（含谐音、符号、拼音变体）
-  {cat:'引流违规', severity:3, words:['加我的微信','加你微信','加我微信','加微信','加微','加V','加v','加薇','vx','VX','薇信','威信','微❤','微♥','微信同号','+V','＋V','加微信直接','扫码加','v信','加我V','加我v','加威信','私信微信','私微信','我微信','发微信','微信发','微信找我','微信上聊','加一下微信','加下微信','微信号码','微信号是','留微信','给我微信','你微信','微信扣我','微信滴滴','加卫星','卫星号','卫星同号','卫星聊','薇❤','威❤','威信同号','v❤','飞鸽','企鹅号','企鹅','QQ号','扣扣','加扣','加扣扣','加QQ','QQ同号','电话同号','手机同号','联系号码','手机号','联系方式','主页薇','主页V','主页v','主页微信','主页找我','简介找我','加我卫星'], fix:'平台禁止直接引流到微信。改走「私信我」引导，评论区扣1或主页简介承接，别在文案里写微信号。', alt:'薇❤ / 徵信 / 藢信 / 微★ / 薇★（同音字+符号变体，别写「微信」全称）'},
-  // 效果承诺：具体天数+具体减重数字（例：三天减五斤）
-  {cat:'效果承诺', severity:3, type:'regex', regex:/([0-9一二三四五六七八九十两]+)\s*[天日周月年]\s*.{0,6}?[瘦减减]\s*([0-9一二三四五六七八九十两]+)\s*[斤公斤kg]/gi, msg:'「X天减X斤」类具体时间+具体减重数字的承诺', fix:'删掉具体天数和斤数，改为「循序渐进」「配合饮食运动管理体重」', alt:'「配合饮食和运动，循序渐进」「我自己坚持了两个月，感觉不错」'},
-  // 效果承诺：关键词（快速见效类）
-  {cat:'效果承诺', severity:3, words:['几天瘦','7天瘦','10天瘦','15天瘦','一个月瘦','暴瘦','极速瘦身','快速瘦身','轻松瘦','躺着瘦','保证瘦','瘦成闪电','一周瘦','立瘦','秒瘦','不反弹','永久瘦','彻底瘦','想瘦就瘦','狂瘦','保准瘦','一定能瘦','肯定瘦','三天减','三天瘦','五天瘦','七天瘦','月瘦','年瘦','瘦X斤','减X斤','包瘦','必瘦','立竿见影','马上见效','立刻见效','当天见效','当天瘦','速效','特效','奇效','神效','无效退款','无效包退','没效果退钱','效果立现','几天见效','快速见效','瘦成纸片人','暴瘦10斤','狂减','极速减脂','急速瘦','瘦腿霜','瘦腰霜','瘦肚子','躺瘦','睡瘦','7天见效','3天见效'], fix:'改为「科学减脂」「配合饮食和运动」「循序渐进」，不承诺具体效果和天数', alt:'「科学减脂」「体重管理」「配合饮食和运动」——删掉天数+斤数'},
-  // 绝对化/保证用语（广告法红线）
-  {cat:'绝对化用语', severity:3, words:['最有效','最安全','最好','第一','顶级','唯一','绝无仅有','百分百','100%','100%有效','绝对','彻底','根治','万能','包治','100%瘦','保准','保证','肯定','一定','绝对瘦','绝对有效','必然','必定','首选','最佳','最优','最强','国家级','世界级','全球第一','全网第一','全国第一','销量第一','排名第一','首选品牌','冠军','领导品牌','王牌','无敌','完美','极致','一流','顶尖','巅峰','最权威','资深','独家','首创','领先','领导者','行业标杆','行业第一','NO.1','No.1','TOP1','天花板','零差评','史上最强','史上最','最火','最牛','最便宜','最低价','全网最低'], fix:'改为「我自己用了觉得不错」「很多人反馈不错」，删掉「最/第一/100%」这类绝对化词', alt:'「我自己用下来感觉不错」「很多朋友反馈说挺好」——主观感受，别下结论'},
-  // 减肥服务/产品暗示
-  {cat:'减肥服务暗示', severity:2, words:['减肥方案','减脂方案','瘦身方案','减肥计划','减肥食谱','减肥药','减肥茶','减肥产品','减肥仪器','减肥机构','减肥中心','减肥训练营','减肥指导','减肥教练','私人定制减肥','定制减肥','减肥套餐','减肥服务','瘦身食谱','减脂餐','代餐','燃脂丸','酵素','青汁','瘦瘦包','中药减肥','拔罐减肥','埋线减肥','溶脂','纤体','塑形仪','瘦身霜','减脂营','瘦身营','减肥酵素','暴汗服','瘦瘦贴','燃脂膏','减肥课程','减脂课程','瘦身课程'], fix:'避免把体重管理包装成医疗/专业服务，改为「饮食参考」「运动习惯分享」「体重管理经验」', alt:'「饮食参考」「运动习惯分享」「体重管理经验」'},
-  // 医疗暗示
-  {cat:'医疗暗示', severity:2, words:['治疗','药用','药物减肥','根治','针灸减肥','刮痧减肥','手术','药效','疗程','处方','治愈','调理','排毒','祛湿','燃脂','代谢','老中医','秘方','医院','医生','诊所','药方','理疗','康复','滋补','养生','药膳','气血','湿气','脾胃','内分泌','激素','副作用','临床','疗效','医学','中医','中药','疗效显著','药到病除'], fix:'减肥是体重管理不是医疗行为，删掉医疗词，改说「辅助减脂」「体重管理」', alt:'「辅助减脂」「体重管理」「科学饮食」——别用医疗词'},
-  // 诱导留资/过度引导互动
-  {cat:'诱导留资', severity:2, words:['加群领','加群送','转发领','点赞送','关注送','留手机号','填手机号','点击链接','下载app','进群领','扫码领','免费领取','免费送','限时免费','前100名','0元领','私信领','评论领','扣1领取','评论区扣1','扣666','点赞收藏转发','三连','福利群','资料群','粉丝群','内部群','私密群','限时抢购','仅限今日','最后一天','手慢无','先到先得','错过再等一年','点我头像','头像有惊喜','私信发你','私信领取','点击下方链接','主页链接','评论区扣','私信扣1','私信666'], fix:'引流话术往「私信我」引导，不要写具体领奖动作+联系方式', alt:'「想了解的私信我」「评论区聊，我看到都会回」'},
-  // 绝对收益（变现承诺）
-  {cat:'绝对收益', severity:3, words:['稳赚','保赚','躺赚','日入','月入十万','年入百万','收益翻倍','稳赢','无风险投资','包赚','日赚','月入过万','年入千万','一夜暴富','财富自由','轻松赚钱','副业月入','宝妈月入','在家赚钱','零成本赚钱','躺平赚钱','被动收入','睡后收入','稳定收益','高回报','稳赚不赔','稳赚稳赢','包教包会','学会就能赚钱','加盟就赚','躺赚月入'], fix:'收益类宣传必须真实可查，禁止承诺收益', alt:'「分享我的真实收入记录」「这是我实操的过程记录」——展示过程不承诺结果'},
-  // 直播/电商价格违规
-  {cat:'价格违规', severity:2, words:['全网最低价','史上最低','亏本卖','亏本清仓','清仓甩卖','跳楼价','骨折价','血亏','赔本卖','不买后悔','错过后悔','最后机会','仅剩X件','库存不多','爆款','销量王','好评如潮','零差评','五星好评','买一送一','第二件半价','假一赔十','正品保证','原装进口','进口原装','假一罚万','只赚口碑不赚钱','今天买最划算','错过就没了'], fix:'价格类宣传不要用「最低/亏本/清仓」等绝对化表述，库存用「目前只有少量现货」', alt:'「现在的价格比较实惠」「喜欢的朋友可以尽早入手」'}
+});
+
+// ========== 液态玻璃：鼠标跟随光泽（CSS 兜底） ==========
+document.querySelectorAll('.glass').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    c.style.setProperty('--my',(e.clientY-r.top)+'px');
+  });
+});
+
+/* ════════════════════════════════════════════════════════════
+   三合一工具箱：面板切换 + 对标账号评估 + 账号打造实战题
+   ════════════════════════════════════════════════════════════ */
+function showTool(id){
+  document.querySelectorAll('.tool-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('panel-'+id);
+  if(panel)panel.classList.add('active');
+  document.querySelectorAll('#tool-nav .tbtn').forEach(t=>{
+    t.classList.toggle('active',t.getAttribute('data-panel')===id);
+  });
+  if(window.__lgRefresh)requestAnimationFrame(()=>requestAnimationFrame(window.__lgRefresh));
+}
+document.getElementById('tool-nav').addEventListener('click',function(e){
+  const b=e.target.closest('.tbtn'); if(!b)return;
+  showTool(b.getAttribute('data-panel'));
+});
+
+/* ───────────── ① 对标账号评估 ───────────── */
+const B_STEPS=[
+  {t:'基本信息',q:'这个对标账号叫什么？',d:'写昵称或 ID 就行，不用很精确。你越了解它，评估越准。',type:'text',key:'name',ph:'例如：XX减脂日记 / 阿强聊职场 / 老王带你吃'},
+  {t:'内容赛道',q:'它主要做什么内容？',d:'判断赛道与你是否同频，不同频的内容抄了也白抄。',type:'choice',key:'niche',multi:false,opts:['口播知识','生活/日常vlog','剧情段子','好物测评/带货','美妆穿搭','健身/减脂','美食探店','亲子育儿','职场/搞钱','情感/观点','颜值/才艺','其他']},
+  {t:'体量',q:'它现在大概多少粉丝？',d:'体量决定你能不能复制：太小不稳定，太大你抄不动。',type:'choice',key:'fans',multi:false,opts:['1万以下','1万-5万','5万-20万','20万-100万','100万以上']},
+  {t:'涨粉速度',q:'它最近 3 个月涨粉怎么样？',d:'抖音只看最近3个月——抄一个正在涨的，比抄一个曾经的爆款更值钱。',type:'choice',key:'growth',multi:false,opts:['快速增长（近3个月翻倍以上）','稳步上升','基本不动','在掉粉']},
+  {t:'变现',q:'它靠什么赚钱？（可多选）',d:'变现越清晰的号越值得抄，抄它等于直接抄一套验证过的赚钱路径。',type:'choice',key:'money',multi:true,opts:['星图广告','带货佣金','直播打赏','卖课/付费咨询','私域承接','好像还没变现']},
+  {t:'可复制点',q:'你最想复制它的哪些？（可多选）',d:'选不出 2 个以上可复制的点，这个对标对你就没有意义。',type:'choice',key:'copy',multi:true,opts:['选题方向','口播文案结构','拍摄场景/画面','人物设定/人设','剪辑节奏','直播方式','变现路径']}
 ];
+const bAns={};
+let bStep=0,bSel={};
 
-function scanBan(text){
-  const hits = [];
-  BAN_RULES.forEach(rule=>{
-    if(rule.type==='regex' && rule.regex){
-      rule.regex.lastIndex = 0;
-      let m;
-      while((m = rule.regex.exec(text)) !== null){
-        hits.push({cat:rule.cat, word:m[0], severity:rule.severity, fix:rule.fix || rule.msg, alt:rule.alt});
-        if(rule.regex.lastIndex === m.index) rule.regex.lastIndex++;
+function setBar(id,w){document.getElementById(id).style.width=w+'%';}
+
+function renderB(){
+  const s=B_STEPS[bStep];
+  const total=B_STEPS.length;
+  setBar('b-bar',Math.round((bStep)/(total)*100));
+  let html='';
+  html+=`<div class="wz-step-tag">第 ${bStep+1}/${total} 步 · ${s.t}</div>`;
+  html+=`<div class="wz-q">${s.q}</div><div class="wz-desc">${s.d}</div>`;
+  if(s.type==='text'){
+    const v=(bAns[s.key]||'');
+    html+=`<textarea class="wz-input" id="in-${s.key}" placeholder="${s.ph}">${v}</textarea>`;
+  }else if(s.type==='choice'){
+    const cur=bSel[s.key]||[];
+    html+='<div class="choice-grid">';
+    s.opts.forEach(o=>{
+      const on=cur.includes(o);
+      html+=`<span class="choice ${on?'sel':''}" data-k="${s.key}" data-v="${o}">${o}</span>`;
+    });
+    html+='</div>';
+  }
+  document.getElementById('b-body').innerHTML=html;
+  document.getElementById('b-back').disabled=(bStep===0);
+  const last=(bStep===total-1);
+  document.getElementById('b-next').innerHTML=last?'完成评估 ✓':'下一步 →';
+  if(bStep===0)setBar('b-bar',6);
+  // bind choice clicks
+  document.querySelectorAll('#b-body .choice').forEach(c=>{
+    c.addEventListener('click',function(){
+      const k=this.getAttribute('data-k'),v=this.getAttribute('data-v');
+      const step=B_STEPS.find(x=>x.key===k);
+      if(!bSel[k])bSel[k]=[];
+      if(step.multi){
+        const i=bSel[k].indexOf(v);
+        if(i>=0)bSel[k].splice(i,1);else bSel[k].push(v);
+      }else{
+        bSel[k]=[v];
       }
-    } else if(rule.words){
-      rule.words.forEach(w=>{
-        const lowerW = w.toLowerCase();
-        const lowerT = text.toLowerCase();
-        let idx = lowerT.indexOf(lowerW);
-        while(idx !== -1){
-          hits.push({cat:rule.cat, word:text.substring(idx, idx+w.length), severity:rule.severity, fix:rule.fix, alt:rule.alt, pos:idx});
-          idx = lowerT.indexOf(lowerW, idx + Math.max(1, w.length));
-        }
+      renderBChoiceState();
+    });
+  });
+}
+function renderBChoiceState(){
+  document.querySelectorAll('#b-body .choice').forEach(c=>{
+    const k=c.getAttribute('data-k');
+    c.classList.toggle('sel',(bSel[k]||[]).includes(c.getAttribute('data-v')));
+  });
+}
+document.getElementById('b-back').addEventListener('click',function(){
+  collectB();
+  if(bStep>0){bStep--;renderB();}
+});
+document.getElementById('b-next').addEventListener('click',function(){
+  collectB();
+  if(bStep<B_STEPS.length-1){bStep++;renderB();}
+  else{finishB();}
+});
+function collectB(){
+  B_STEPS.forEach(s=>{
+    if(s.type==='text'){
+      const el=document.getElementById('in-'+s.key);
+      if(el)bAns[s.key]=el.value.trim();
+    }else if(s.type==='choice'){
+      bAns[s.key]=bSel[s.key]||[];
+    }
+  });
+}
+function finishB(){
+  collectB();
+  const name=bAns.name||'这个对标账号';
+  const f=(bAns.fans&&bAns.fans[0])||'未选',g=(bAns.growth&&bAns.growth[0])||'未选';
+  const money=bAns.money||[],copy=bAns.copy||[];
+  const realMoney=money.filter(m=>m!=='好像还没变现');
+  const fansP={'1万以下':8,'1万-5万':18,'5万-20万':20,'20万-100万':12,'100万以上':5}[f]||0;
+  const growthP={'快速增长（近3个月翻倍以上）':35,'稳步上升':24,'基本不动':8,'在掉粉':-12}[g]||0;
+  let moneyTotal;
+  const moneyMap={'星图广告':6,'带货佣金':6,'直播打赏':4,'卖课/付费咨询':6,'私域承接':5};
+  if(realMoney.length===0)moneyTotal=-7;
+  else moneyTotal=realMoney.reduce((a,m)=>a+(moneyMap[m]||0),0)+(realMoney.length>=3?5:realMoney.length===2?3:1);
+  const copyTotal=Math.min(copy.length*8,32);
+  const total=fansP+growthP+moneyTotal+copyTotal;
+  const score=Math.max(1,Math.min(10,Math.round((total+12)/14)));
+
+  // 结论
+  let verdict,verdictSub;
+  if(score>=7.5){verdict='优质对标 · 值得长期拆解';verdictSub='增长、变现、可复制三方面都不错，是值得每天拆解研究的模板账号。';}
+  else if(score>=5.5){verdict='可以抄 · 但要挑着抄';verdictSub='整体过关，但有明显短板，只抄它的强项，别整套照搬。';}
+  else{verdict='谨慎 · 建议再找找';verdictSub='这个对标对现阶段的你帮助有限，先别花大力气拆它。';}
+
+  const li=[];
+  const growBad=!g.includes('增长');
+  if(g==='在掉粉')li.push({mk:'bad',txt:'它最近在掉粉——流量逻辑可能已失效，抄它大概率是抄一个下滑趋势。'});
+  else if(g==='基本不动')li.push({mk:'warn',txt:'近3个月基本没在涨，说明内容正在走下坡，价值要打个折。'});
+  if(f==='100万以上')li.push({mk:'warn',txt:'粉丝百万级通常是大团队/投流打法，个人新手很难复制它的增长路径。'});
+  if(realMoney.length===0)li.push({mk:'bad',txt:'它还没跑通变现，抄内容可以，但商业模式别照着学。'});
+  if(realMoney.length>=2)li.push({mk:'good',txt:'变现路径清晰（≥2条），这种号值得深度拆解它的成交链路。'});
+  if(copy.length===0)li.push({mk:'warn',txt:'你还没想清楚抄它哪里——建议至少锁定「选题」或「文案结构」一个点。'});
+  if(copy.length>=2&&g.includes('增长')&&realMoney.length>0)li.push({mk:'good',txt:'增长快 + 有变现 + 有可复制点，这个号就是你要的活模板。'});
+
+  const acts=[
+    '把它最近30天播放最高的10条拉出来，逐条拆：前2秒钩子、选题、文案结构。',
+    '做一张对标拆解表：账号名 / 粉丝 / 近3月涨粉 / 变现方式 / 你抄什么，至少凑3个对标。',
+    score>=5.5?'以它为模板，30天内做20条同结构内容，再回来复盘数据。':'先把标准放低：找一个1-20万粉、正在涨、你能轻松看懂的对标。'
+  ];
+
+  const r=score/10,circ=2*Math.PI*46;
+  let html='';
+  html+=`<div class="eval-head">`;
+  html+=`<div class="eval-ring"><svg width="108" height="108" viewBox="0 0 108 108"><circle cx="54" cy="54" r="46" fill="none" stroke="rgba(255,255,255,.65)" stroke-width="10"/><circle cx="54" cy="54" r="46" fill="none" stroke="url(#evalGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ*(1-r)).toFixed(1)}" style="transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)"/><defs><linearGradient id="evalGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3aa8e0"/><stop offset="100%" stop-color="#5e8cf0"/></linearGradient></defs></svg><div class="ring-num">${score}<span class="ring-lb">/10 值得抄</span></div></div>`;
+  html+=`<div class="eval-verdict"><div class="eval-title">${verdict}</div><div class="eval-sub">${name} · ${f}粉 · ${g}</div><div class="eval-sub" style="margin-top:6px">${verdictSub}</div></div>`;
+  html+=`</div>`;
+  html+=`<div class="eval-list">`;
+  if(li.length===0)html+=`<div class="li"><span class="mk good">✓</span><span>评估项信息太少，把粉丝量级、涨粉和变现补全后会更有参考性。</span></div>`;
+  li.forEach(x=>{const icon=x.mk==='good'?'✓':x.mk==='warn'?'!':'✗';html+=`<div class="li"><span class="mk ${x.mk}">${icon}</span><span>${x.txt}</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="eval-list"><div style="font-size:13px;font-weight:800;color:var(--accent-deep);margin:8px 0 2px">接下来这么做</div>`;
+  acts.forEach(a=>{html+=`<div class="li"><span class="mk good">→</span><span>${a}</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="cta-row"><button class="cta-mini ghost" onclick="resetB()">↺ 换个对标重测</button><button class="cta-mini" onclick="showTool('predict')">🎬 去测我的第一句话</button><button class="cta-mini" onclick="showTool('exam')">📝 去做完整账号方案</button></div>`;
+  document.getElementById('b-result').innerHTML=html;
+  document.getElementById('b-result').style.display='block';
+  document.getElementById('b-body').style.display='none';
+  document.getElementById('b-back').style.display='none';
+  document.getElementById('b-next').style.display='none';
+  setBar('b-bar',100);
+}
+function resetB(){
+  bStep=0;bAns.name='';bSel={};
+  document.getElementById('b-result').style.display='none';document.getElementById('b-result').innerHTML='';
+  document.getElementById('b-body').style.display='block';
+  document.getElementById('b-back').style.display='inline-block';
+  document.getElementById('b-next').style.display='inline-block';
+  renderB();
+}
+
+/* ───────────── ② 账号打造实战题 ───────────── */
+const QUIZ=[
+  {g:'定位',q:'你帮谁？请具体到人群，不要只写"想减肥的人"。',ph:'例：产后妈妈 / 久坐上班族 / 反复减肥反弹的人',key:'q1',type:'text'},
+  {g:'定位',q:'你主要帮他/她解决什么问题？一句话说清。',ph:'例：30天健康减脂、不反弹',key:'q2',type:'text'},
+  {g:'定位',q:'凭什么信你？写出你的3条背书。',ph:'经历 / 案例 / 专业能力 各一条',key:'q3',type:'tri',labels:['背书1 · 经历','背书2 · 案例','背书3 · 专业能力']},
+  {g:'变现',q:'你的主要变现方式是什么？为什么？',ph:'私域 / 橱窗 / 直播 / 星图等。例：先做私域，客单价高、信任后好成交',key:'q4',type:'text'},
+  {g:'方向',q:'你准备选哪 2 个起号方向？写清"主攻 + 挑战"。',ph:'例：主攻「减脂干货口播」+ 挑战「真人出镜跟练」',key:'q5',type:'text'},
+  {g:'一句话定位',q:'写出你的账号一句话定位（选填，最后会帮你自动生成草稿）。',ph:'我帮助____，解决____，凭借____',key:'q6',type:'tpl',labels:['帮助谁','解决什么','凭借什么']},
+  {g:'对标',q:'写出至少 3 个准备长期拆解的对标账号。',ph:'优先最近3个月增长快、你能复制的账号',key:'q7',type:'tri',labels:['对标账号 1','对标账号 2','对标账号 3']},
+  {g:'对标拆解',q:'从中选 1 个：它为什么火？怎么赚钱？你准备复制什么？',ph:'例：人设真实+选题扎心 → 私域卖课 → 复制它的口播结构',key:'q8',type:'text'},
+  {g:'内容',q:'写出你第一条视频的"前2秒钩子"。',ph:'第一帧就有信息量，避免黑屏 / Logo / 长铺垫',key:'q9',type:'text'},
+  {g:'内容',q:'第一条视频准备模仿哪个对标？具体模仿什么？',ph:'场景 / 动作 / 文案结构 / 节奏',key:'q10',type:'text'},
+  {g:'数据',q:'"曝光高、播放低"，你优先怀疑哪个指标？准备怎么改？',ph:'例：怀疑封面/标题点击率，重做封面测3版',key:'q11',type:'text'},
+  {g:'数据',q:'"播放不错、完播很差"，你优先检查哪里？',ph:'例：检查前3秒钩子和内容节奏',key:'q12',type:'text'},
+  {g:'数据',q:'"播放有了、咨询没有"，你准备从哪 3 个环节排查？',ph:'例：①钩子吸引的人群对不对 ②主页人设清不清楚 ③引导动作够不够强',key:'q13',type:'tri',labels:['排查 1','排查 2','排查 3']},
+  {g:'30天落地',q:'你明天一定完成的 3 个动作是什么？',ph:'写"明天就能做"的，别写计划书',key:'q14',type:'tri',labels:['动作 ①','动作 ②','动作 ③']},
+  {g:'30天落地',q:'30天后，你希望账号至少达到什么状态？',ph:'更新 / 粉丝 / 咨询 / 成交 / 私域',key:'q15',type:'text'}
+];
+const eAns={};
+let eStep=0,eTri={};
+
+function renderE(){
+  const s=QUIZ[eStep];
+  const total=QUIZ.length;
+  setBar('e-bar',Math.round(eStep/total*100));
+  let html='';
+  html+=`<div class="wz-step-tag">第 ${eStep+1}/${total} 题 · ${s.g}</div>`;
+  html+=`<div class="wz-q">${s.q}</div>`;
+  if(s.type==='text'){
+    const v=(eAns[s.key]||'');
+    html+=`<textarea class="wz-input" id="ein-${s.key}" placeholder="${s.ph}">${v}</textarea>`;
+  }else if(s.type==='tri'){
+    html+='<div class="wz-tri">';
+    s.labels.forEach((lb,i)=>{
+      const v=((eAns[s.key]&&eAns[s.key][i])||'');
+      html+=`<div class="tri-item"><label>${lb}</label><input class="wz-input wz-input-sm" id="ein-${s.key}-${i}" placeholder="${s.ph}" value="${v}"></div>`;
+    });
+    html+='</div>';
+  }else if(s.type==='tpl'){
+    html+='<div class="wz-tri">';
+    s.labels.forEach((lb,i)=>{
+      const v=((eAns[s.key]&&eAns[s.key][i])||'');
+      html+=`<div class="tri-item"><label>${lb}</label><input class="wz-input wz-input-sm" id="ein-${s.key}-${i}" placeholder="${s.ph}"></div>`;
+    });
+    html+='</div>';
+  }
+  html+=`<div class="wz-hint">${s.type==='tri'||s.type==='tpl'?'每一栏都填，方案才完整。':'想不出来先留白，最后会标出来提醒你补。'}</div>`;
+  document.getElementById('e-body').innerHTML=html;
+  document.getElementById('e-back').disabled=(eStep===0);
+  document.getElementById('e-next').innerHTML=(eStep===total-1)?'生成我的账号方案 🎉':'下一步 →';
+  if(eStep===0)setBar('e-bar',4);
+  // focus
+  const first=document.querySelector('#e-body input,#e-body textarea');
+  if(first&&!first.value)first.focus();
+}
+function collectE(){
+  QUIZ.forEach(s=>{
+    if(s.type==='text'){
+      const el=document.getElementById('ein-'+s.key);
+      if(el)eAns[s.key]=el.value.trim();
+    }else if(s.type==='tri'||s.type==='tpl'){
+      const arr=[];
+      s.labels.forEach((lb,i)=>{
+        const el=document.getElementById('ein-'+s.key+'-'+i);
+        arr.push(el?el.value.trim():'');
       });
+      eAns[s.key]=arr;
     }
-  });
-
-  // ===== 语境判断 =====
-  const guideCtx = ['加','加一下','加我','加微','私信','私我','发我','发给你','给你发','找我','聊','联系','留','给','发'];
-  const promiseCtx = /(\d+\s*[天日周月年]).{0,6}?[瘦减减]|\d+\s*[斤公斤kg]|保准|保证|肯定|一定|绝对|不反弹|彻底|必瘦|包瘦/;
-
-  hits.forEach(h=>{
-    const pos = h.pos !== undefined ? h.pos : text.toLowerCase().indexOf(h.word.toLowerCase());
-    const ctxStart = Math.max(0, pos-18);
-    const ctxEnd = Math.min(text.length, pos + h.word.length + 18);
-    const ctx = text.substring(ctxStart, ctxEnd);
-
-    if(h.cat === '引流违规'){
-      // 只有「微信」但附近没有「加/私信/发/找我」等引流动作 → 降级为提示
-      const hasGuide = guideCtx.some(g => ctx.toLowerCase().includes(g.toLowerCase()));
-      if(!hasGuide && /微信|威信|薇信|vx/i.test(h.word)){
-        h.severity = 1;
-        h.ctxNote = '「微信」单独出现，未检测到「加/私信/发」等引流动作，仅作风险提示';
-      }
-    }
-    if(h.cat === '减肥服务暗示'){
-      // 附近有具体效果承诺或绝对化 → 升级高危
-      if(promiseCtx.test(ctx)){
-        h.severity = 3;
-        h.ctxNote = '配合具体效果/保证承诺，风险升级';
-      }
-    }
-  });
-
-  // 去重：同类别同命中词只留一条（保留最高severity）
-  const map = new Map();
-  hits.forEach(h=>{
-    const k = h.cat + '|' + h.word.toLowerCase();
-    if(!map.has(k) || map.get(k).severity < h.severity){
-      map.set(k, h);
-    }
-  });
-  // 子串合并：同一类别里，如果A包含B，保留更长的（更长通常语义更完整）
-  const list = Array.from(map.values());
-  const filtered = [];
-  list.forEach(h=>{
-    const lw = h.word.toLowerCase();
-    const dupIdx = filtered.findIndex(f => f.cat === h.cat && (f.word.toLowerCase().includes(lw) || lw.includes(f.word.toLowerCase())));
-    if(dupIdx === -1){
-      filtered.push(h);
-    } else {
-      const dup = filtered[dupIdx];
-      if(h.word.length > dup.word.length || (h.word.length === dup.word.length && h.severity > dup.severity)){
-        filtered[dupIdx] = h;
-      }
-    }
-  });
-  return filtered;
-}
-
-function banResultHTML(hits){
-  // 语境降级为「提示」的（severity 1）不算违规，只提醒；其余命中一律直接判违规
-  const viol = hits.filter(h=>h.severity>=2);
-  const warns = hits.filter(h=>h.severity===1);
-  let html = '';
-  if(viol.length===0 && warns.length===0){
-    html += `<div class="score-big">
-      <div class="num" style="color:var(--success)">✓</div>
-      <div class="lbl" style="color:var(--success);font-size:15px;font-weight:800">未发现违规词，这条文案可以发</div>
-    </div>
-    <div class="advice-item"><span class="advice-n">✓</span><div class="advice-t">保持这个标准。另外提醒：即使没违禁词，也别在同一条视频下重复发同样的话术（重复话术也是风控点）。</div></div>`;
-    return html;
-  }
-  if(viol.length>0){
-    html += `<div class="score-big">
-      <div class="num" style="color:var(--danger)">✗</div>
-      <div class="lbl" style="color:var(--danger);font-size:15px;font-weight:800">检测到 ${viol.length} 处违规内容，这条文案不能直接发！</div>
-    </div>`;
-  } else {
-    html += `<div class="score-big">
-      <div class="num" style="color:var(--warning)">!</div>
-      <div class="lbl" style="color:var(--warning);font-size:15px;font-weight:800">有 ${warns.length} 处敏感表述，建议改一下再发</div>
-    </div>`;
-  }
-  [...viol, ...warns].slice(0,12).forEach(h=>{
-    html += `<div class="ban-item">
-      <span class="ban-tag red">${esc(h.cat)}</span>
-      <div style="flex:1">
-        <div style="font-size:13px">命中词：<span class="ban-w">${esc(h.word)}</span></div>
-        ${h.ctxNote ? `<div class="ban-ctx">语境：${esc(h.ctxNote)}</div>` : ''}
-        <div class="ban-fix">💡 怎么改：${esc(h.fix)}</div>
-        ${h.alt ? `<div class="ban-alt">✅ 可以换成：${esc(h.alt)}</div>` : ''}
-      </div>
-    </div>`;
-  });
-  html += `<div class="advice-item"><span class="advice-n">✓</span><div class="advice-t">统一规避口诀：<b>不承诺效果、不写绝对词、不直接留联系方式</b>。「微信」可以写成「徵 / 藢 / 薇❤ / vx / 卫星」，「100%瘦」改成「我自己觉得不错」——换个说法，效果照样有。</div></div>`;
-  return html;
-}
-
-// ========== 工具2：违禁词检测 ==========
-function runBan(){
-  const input = document.getElementById('ban-input');
-  const text = input.value.trim();
-  if(!text){ alert('先把要检测的文案贴进来'); input.focus(); return; }
-  showAnalyze('正在扫描违禁词…', ['分词拆解','广告法匹配','风控词匹配','生成报告'], function(){
-    const hits = scanBan(text);
-    document.getElementById('ban-result').innerHTML = banResultHTML(hits);
-    showRes('ban-result');
   });
 }
-document.getElementById('ban-input').addEventListener('input',function(){
-  document.getElementById('ban-count').textContent=this.value.length+' 字';
+document.getElementById('e-back').addEventListener('click',function(){
+  collectE();
+  if(eStep>0){eStep--;renderE();}
 });
-document.getElementById('ban-chips').addEventListener('click',function(e){
-  const chip=e.target.closest('.chip');
-  if(!chip)return;
-  const ta=document.getElementById('ban-input');
-  ta.value=chip.getAttribute('data-t');
-  document.getElementById('ban-count').textContent=ta.value.length+' 字';
+document.getElementById('e-next').addEventListener('click',function(){
+  collectE();
+  if(eStep<QUIZ.length-1){eStep++;renderE();}
+  else{finishE();}
 });
+function esc(s){return (s||'').replace(/</g,'&lt;');}
+function txt(a){return (a||'').filter(x=>x&&x.trim()).join(' / ');}
+function autoPos(){
+  const t=eAns.q6||[];
+  if(t&&t.filter(x=>x.trim()).length>=1)return `我帮助${t[0]||'____'}，解决${t[1]||'____'}，凭借${t[2]||'____'}。`;
+  const q1=eAns.q1||'',q2=eAns.q2||'',q3=(eAns.q3||[]).find(x=>x.trim())||'';
+  return `我帮助${q1||'____'}，解决${q2||'____'}，凭借${q3||'____'}。`;
+}
+function finishE(){
+  collectE();
+  const pos=autoPos();
+  const secDefs=[
+    {g:'定位',qs:[['q1','你帮谁'],['q2','解决什么问题'],['q3','3条背书']]},
+    {g:'变现',qs:[['q4','主要变现方式']]},
+    {g:'起号方向',qs:[['q5','主攻 + 挑战']]},
+    {g:'对标',qs:[['q7','对标账号'],['q8','对标拆解']]},
+    {g:'内容',qs:[['q9','第一条视频前2秒钩子'],['q10','模仿谁、模仿什么']]},
+    {g:'数据自查',qs:[['q11','曝光高播放低怎么办'],['q12','播放好完播差查哪里'],['q13','有播放没咨询排查']]},
+    {g:'30天落地',qs:[['q14','明天就做的3个动作'],['q15','30天目标状态']]}
+  ];
+  const filledQ=(q)=>{const v=eAns[q.key];return v&&(typeof v==='string'?v.trim():v.filter(x=>x.trim()).length>0);};
+  let blocks='';
+  secDefs.forEach(sec=>{
+    let inner='';
+    sec.qs.forEach(([key,label])=>{
+      const s=QUIZ.find(x=>x.key===key);
+      if(!filledQ(s))return;
+      inner+=`<div class="pa"><span class="pa-q">${label}</span>${esc(s.type==='text'?eAns[key]:txt(eAns[key]))}</div>`;
+    });
+    if(inner)blocks+=`<div class="plan-block"><div class="plan-sec">${sec.g}</div>${inner}</div>`;
+  });
+  const missing=QUIZ.filter(s=>!filledQ(s)).length;
+
+  let html='';
+  html+=`<div class="plan-head"><div class="plan-brand">迷人秀 · 商业IP</div><div class="plan-title">你的账号打造实战方案</div></div>`;
+  html+=`<div class="plan-pos"><b>一句话定位：</b>${esc(pos)}</div>`;
+  html+=blocks;
+  if(missing>0)html+=`<div style="font-size:12.5px;color:var(--warning);margin-top:6px">还有 ${missing} 题留白，可返回上一题补全，方案会更完整。</div>`;
+  html+=`<div class="plan-tools"><button onclick="copyPlan()">📋 复制方案</button><button class="ghost" onclick="resetE()">↺ 重新填写</button><button class="ghost" onclick="showTool('predict')">🎬 顺手测个开头</button></div>`;
+  html+=`<div class="plan-copy-ok" id="copy-ok">✓ 已复制，可以粘贴到微信/备忘录保存</div>`;
+  document.getElementById('e-result').innerHTML=html;
+  document.getElementById('e-result').style.display='block';
+  document.getElementById('e-body').style.display='none';
+  document.getElementById('e-back').style.display='none';
+  document.getElementById('e-next').style.display='none';
+  setBar('e-bar',100);
+  window.__planTxt=buildPlanTxt(pos);
+}
+function buildPlanTxt(pos){
+  const L=[];
+  L.push('迷人秀商业IP · 账号打造实战方案');
+  L.push('一句话定位：'+pos);
+  L.push('');
+  const secDefs=[
+    {g:'【定位】',qs:[['q1','你帮谁：'],['q2','解决什么问题：'],['q3','3条背书：']]},
+    {g:'【变现】',qs:[['q4','主要变现方式：']]},
+    {g:'【起号方向】',qs:[['q5','主攻+挑战：']]},
+    {g:'【对标】',qs:[['q7','对标账号：'],['q8','对标拆解：']]},
+    {g:'【内容】',qs:[['q9','第一条视频前2秒钩子：'],['q10','模仿谁模仿什么：']]},
+    {g:'【数据自查】',qs:[['q11','曝光高播放低：'],['q12','完播差查哪里：'],['q13','没咨询排查：']]},
+    {g:'【30天落地】',qs:[['q14','明天3个动作：'],['q15','30天目标：']]}
+  ];
+  secDefs.forEach(sec=>{
+    const arr=[];
+    sec.qs.forEach(([key,label])=>{
+      const s=QUIZ.find(x=>x.key===key);
+      const v=eAns[s.key];
+      if(!v)return;
+      const val=s.type==='text'?(v||'').trim():txt(v);
+      if(val)arr.push(label+val);
+    });
+    if(arr.length){L.push(sec.g);arr.forEach(a=>L.push('  '+a));L.push('');}
+  });
+  return L.join('\n');
+}
+function copyPlan(){
+  const t=window.__planTxt||'';
+  const ok=document.getElementById('copy-ok');
+  const done=function(){ok.style.display='flex';setTimeout(()=>{ok.style.display='none';},2500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(()=>{fallbackCopy(t);done();});
+  }else{fallbackCopy(t);done();}
+}
+function fallbackCopy(t){
+  const ta=document.createElement('textarea');
+  ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);
+}
+function resetE(){
+  eStep=0;
+  Object.keys(eAns).forEach(k=>delete eAns[k]);
+  document.getElementById('e-result').style.display='none';document.getElementById('e-result').innerHTML='';
+  document.getElementById('e-body').style.display='block';
+  document.getElementById('e-back').style.display='inline-block';
+  document.getElementById('e-next').style.display='inline-block';
+  renderE();
+}
+
+// 默认首屏：对标账号评估（面板已 active），先渲染第一步
+renderB();
 </script>
-<script>
-// ========== 工具5：对标账号评估 ==========
-function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
-function fmtWan(v){
-  if(v >= 10000) return (v/10000).toFixed(2) + ' 万';
-  return String(Math.round(v*100)/100);
-}
 
-function runData(){
-  const unit = document.getElementById('d-unit').value;
-  const scale = unit === 'wan' ? 10000 : 1;   // 万 → 原始数字
-  const like = num('d-like') * scale, fans = num('d-fans') * scale;
-  const total = num('d-total'), gap = num('d-gap');
-  const firstVal = document.getElementById('d-first').value;
-  if(!like || !fans || !total){ alert('至少填上：总获赞、粉丝数、视频总数'); return; }
-  showAnalyze('正在评估对标账号…', ['读取主页数据','换算数据单位','计算赞粉比','判断变现能力','计算平均点赞','生成结论'], function(){
-    const lf = like/fans;                       // 赞粉比
-    const avgLike = like/total;                  // 平均每条作品点赞
-    let days = null, expectCount = null;
-    if(firstVal){
-      const first = new Date(firstVal);
-      if(!isNaN(first.getTime())){
-        days = Math.max(1, Math.round((Date.now() - first.getTime()) / 86400000));
-        if(gap > 0) expectCount = Math.round(days / gap);
-      }
-    }
-
-    // 变现能力判断（用户规则：赞粉比 3/6/10 四档）
-    let level, levelColor, levelDesc;
-    if(lf <= 3){
-      level = '变现能力强'; levelColor = 'var(--success)';
-      levelDesc = '平均每 3 个赞就有 1 个粉丝，说明粉丝粘性高，看完愿意关注，转化路径顺，这种账号最值得抄。';
-    } else if(lf <= 6){
-      level = '变现能力正常'; levelColor = 'var(--accent-deep)';
-      levelDesc = '赞粉比在 3:1 ~ 6:1 之间，粉丝粘性中等，内容有认可度，可以抄选题结构。';
-    } else if(lf <= 10){
-      level = '变现能力一般'; levelColor = 'var(--warning)';
-      levelDesc = '赞粉比 7:1 ~ 10:1，有点「光有赞不涨粉」，粉丝看完就走，抄他前先想清楚为什么留不住人。';
-    } else {
-      level = '变现能力差'; levelColor = 'var(--danger)';
-      levelDesc = '赞粉比超过 10:1，粉丝粘性很低，基本是流量号不是变现号，参考价值有限。';
-    }
-
-    let html = '';
-    // 主结论
-    html += `<div class="verdict" style="background:${levelColor}22;color:${levelColor};border:1px solid ${levelColor}55">赞粉比 ${lf.toFixed(2)}:1 · ${level}</div>`;
-    // 指标卡
-    html += '<div class="res-grid">';
-    function cell(v,k){ html += `<div class="res-cell"><div class="v">${v}</div><div class="k">${k}</div></div>`; }
-    cell(lf.toFixed(2)+' : 1', '赞粉比（获赞/粉丝）');
-    cell(avgLike.toFixed(2), '平均每条作品点赞');
-    cell(fmtWan(like), '总获赞');
-    cell(fmtWan(fans), '粉丝数');
-    if(days!==null) cell(days+' 天', '账号已运营天数');
-    if(expectCount!==null) cell(total+' / '+expectCount, '实际发视频 / 按频率应发');
-    html += '</div>';
-    // 变现能力解读
-    html += `<div class="advice-item"><span class="advice-n">💰</span><div class="advice-t"><b>${level}：</b>${levelDesc}</div></div>`;
-    // 平均点赞解读
-    let avgAdvice;
-    if(avgLike >= 500) avgAdvice = '平均单条点赞 500+，爆款能力在线，值得逐条拆解他的开头3秒和选题。';
-    else if(avgLike >= 100) avgAdvice = '平均单条点赞百级，稳定输出型账号，抄他的更新节奏和选题库。';
-    else if(avgLike >= 30) avgAdvice = '平均单条点赞几十，内容一般，只挑他数据最好的那几条看，别全盘照抄。';
-    else avgAdvice = '平均单条点赞个位数，账号基本没跑起来，换个对标。';
-    html += `<div class="advice-item"><span class="advice-n">👍</span><div class="advice-t"><b>平均作品点赞 ${avgLike.toFixed(2)}：</b>${avgAdvice}</div></div>`;
-    // 更新稳定性
-    if(days!==null && expectCount!==null){
-      const ratio = total / expectCount;
-      if(ratio >= 0.8){
-        html += `<div class="advice-item"><span class="advice-n">✓</span><div class="advice-t"><b>更新稳定：</b>运营 ${days} 天按「${gap} 天一更」应发约 ${expectCount} 条，实际 ${total} 条，节奏健康，可复制他的更新频率。</div></div>`;
-      } else if(ratio >= 0.5){
-        html += `<div class="advice-item"><span class="advice-n">⚠</span><div class="advice-t"><b>更新略慢：</b>运营 ${days} 天按「${gap} 天一更」应发约 ${expectCount} 条，实际 ${total} 条，内容偏少，重点看他的爆款单条，别学更新节奏。</div></div>`;
-      } else {
-        html += `<div class="advice-item"><span class="advice-n">✗</span><div class="advice-t"><b>更新不稳：</b>运营 ${days} 天应发约 ${expectCount} 条，实际只有 ${total} 条，断更明显，账号可能已停滞，谨慎选择。</div></div>`;
-      }
-    }
-    document.getElementById('data-result').innerHTML = html;
-    showRes('data-result');
-  });
-}
-// 单位切换时同步 placeholder 提示
-function syncUnitUI(isWan){
-  const like = document.getElementById('d-like'), fans = document.getElementById('d-fans');
-  like.placeholder = isWan ? '例：3.25' : '例：32500';
-  fans.placeholder = isWan ? '例：1.20' : '例：12000';
-  const labels = document.querySelectorAll('#p-data .num-grid .field .mini');
-  if(labels.length >= 2){
-    labels[0].textContent = isWan ? '万为单位' : '个为单位';
-    labels[1].textContent = isWan ? '万为单位' : '个为单位';
-  }
-}
-// 自定义下拉交互
-(function(){
-  const wrap = document.getElementById('d-unit-wrap');
-  const display = wrap.querySelector('.select-display');
-  const optionsBox = wrap.querySelector('.select-options');
-  const options = wrap.querySelectorAll('.select-option');
-  const native = document.getElementById('d-unit');
-  const textEl = display.querySelector('.select-text');
-  function open(){ wrap.classList.add('open'); }
-  function close(){ wrap.classList.remove('open'); }
-  function pick(value, label){
-    native.value = value;
-    textEl.textContent = label;
-    textEl.setAttribute('data-value', value);
-    options.forEach(o=>o.classList.toggle('active', o.dataset.value === value));
-    syncUnitUI(value === 'wan');
-    close();
-  }
-  display.addEventListener('click', function(e){ e.stopPropagation(); wrap.classList.toggle('open'); });
-  options.forEach(opt=>{
-    opt.addEventListener('click', function(e){ e.stopPropagation(); pick(this.dataset.value, this.textContent); });
-  });
-  document.addEventListener('click', function(e){ if(!wrap.contains(e.target)) close(); });
-  // 键盘支持
-  display.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); wrap.classList.toggle('open'); }
-    if(e.key === 'Escape') close();
-  });
-  // 兜底：原生 select 被外部改时同步
-  native.addEventListener('change', function(){ pick(this.value, this.options[this.selectedIndex].text); });
-})();
-
-// ========== 工具4：起号方向推荐 ==========
-const DIR_INFO = {
-  d1:{name:'① 自己打卡', desc:'真实记录自己减脂/变好的过程，前后对比最有说服力。前3条纯价值内容先立信任，再做前后对比。'},
-  d2:{name:'② 改造身边人', desc:'让大体重亲友出镜，记录被改造过程，反差感强、涨粉快。前提：对方愿意出镜。'},
-  d3:{name:'③ 地标互动', desc:'同城地标+门店场景，吃同城流量、带门店曝光。适合本地商家，配合POI挂载效果翻倍。'},
-  d4:{name:'④ 寻人启事', desc:'手写板/横幅互动玩法，涨粉快、互动高。需要准备道具，注意别用「寻人」触发平台限制，改成「寻伙伴」类。'},
-  d5:{name:'⑤ 热点模板', desc:'蹭热点带话题，爆款率靠运气。每周不超过1条，蹭热点24小时内发。'},
-  d6:{name:'⑥ 产品展示', desc:'产品+使用场景展示，为后续变现铺路。前10条先别挂车，先展示价值。'},
-  d7:{name:'⑦ AI起号', desc:'AI生成内容不出镜，适合不想露脸的人。容易判营销号，记得人工加口语化细节。'},
-  d8:{name:'⑧ 图文', desc:'图文笔记形式，制作快。别经常发，容易判营销号，作为补充节奏。'}
-};
-function runDir(){
-  const sel = Array.from(document.querySelectorAll('input[name="dir"]:checked')).map(i=>i.value);
-  if(sel.length===0){ alert('至少勾一个你的条件'); return; }
-  showAnalyze('正在匹配起号方向…', ['资源盘点','方向匹配','组合推荐','生成打法'], function(){
-    let main = null, aux = null, extras = [];
-    if(sel.includes('d3') || sel.includes('d4')){ main = sel.includes('d3')?'d3':'d4'; aux = sel.includes('d4')?'d4':'d3'; }
-    if(sel.includes('d1')){ main = 'd1'; }
-    if(sel.includes('d2')){ main = 'd2'; }
-    if(sel.includes('d6')){ if(!main) main='d6'; else extras.push('d6'); }
-    if(sel.includes('d7')){ extras.push('d7'); }
-    if(sel.includes('d8')){ extras.push('d8'); }
-    if(sel.includes('d5')){ extras.push('d5'); }
-    if(!main) main = 'd3';
-
-    let html = `<div class="verdict" style="background:#3aa8e022;color:var(--accent-deep);border:1px solid #3aa8e055">推荐组合：${DIR_INFO[main].name} ${aux?' + '+DIR_INFO[aux].name:''}${extras.length>0?' （附加：'+extras.map(e=>DIR_INFO[e].name.replace(/^\d\s/,'')).join('、')+'）':''}</div>`;
-    html += `<div class="flow-card"><div class="flow-icon">🎯</div><div class="flow-body"><h4>主方向 · ${DIR_INFO[main].name}</h4><p>${DIR_INFO[main].desc}</p></div></div>`;
-    if(aux) html += `<div class="flow-card"><div class="flow-icon">🔁</div><div class="flow-body"><h4>辅助方向 · ${DIR_INFO[aux].name}</h4><p>${DIR_INFO[aux].desc}</p></div></div>`;
-    if(extras.length) html += `<div class="flow-card"><div class="flow-icon">🧩</div><div class="flow-body"><h4>附加方向</h4><p>${extras.map(e=>DIR_INFO[e].name+'：'+DIR_INFO[e].desc).join('<br>')}</p></div></div>`;
-    html += `<div class="flow-card"><div class="flow-icon">📅</div><div class="flow-body"><h4>接下来每天拍什么</h4><p>① 用「对标账号评估」找 5 个对标，从最火的 1 条开始 1:1 复刻（对应课程第肆章）<br>② 前 3 条发纯价值内容（不挂车、不带货、不留私域）<br>③ 保持日更或隔日更，同一套选题换场景一直复制（对应课程第柒章）</p></div></div>`;
-    html += `<div class="advice-item"><span class="advice-n">⚠</span><div class="advice-t"><b>红线：</b>热点类每周≤1条；图文别常发；方向定了 30 天内别反复横跳——课程第伍章原话。</div></div>`;
-    document.getElementById('dir-result').innerHTML = html;
-    showRes('dir-result');
-  });
-}
-</script>
 </body>
 </html>
