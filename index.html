@@ -229,9 +229,11 @@ body{
 .wz-tri{display:grid;gap:12px}
 .wz-tri .tri-item label{display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px}
 .choice-grid{display:flex;flex-wrap:wrap;gap:9px}
-.choice{padding:11px 16px;border-radius:14px;font-size:13.5px;font-weight:600;color:var(--text-2);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);cursor:pointer;transition:all .2s;user-select:none;line-height:1.4}
-.choice:hover{border-color:rgba(58,168,224,.55)}
-.choice.sel{color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));border-color:transparent;box-shadow:0 6px 16px rgba(58,168,224,.35)}
+.choice{padding:11px 16px;border-radius:14px;font-size:13.5px;font-weight:600;color:var(--text-2);background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);cursor:pointer;user-select:none;line-height:1.4;transition:transform .18s cubic-bezier(.22,1,.36,1),box-shadow .25s ease,border-color .25s ease,background-color .25s ease,color .25s ease;will-change:transform}
+.choice:hover{border-color:rgba(58,168,224,.6);box-shadow:0 5px 16px rgba(58,168,224,.16);transform:translateY(-1px)}
+.choice:active{transform:scale(.95)}
+.choice.sel{color:#fff;background:linear-gradient(135deg,rgba(58,168,224,.95),rgba(79,142,247,.95));border-color:rgba(255,255,255,.85);box-shadow:0 6px 18px rgba(58,168,224,.4),inset 0 1px 1px rgba(255,255,255,.45);animation:choicePop .28s cubic-bezier(.22,1,.36,1)}
+@keyframes choicePop{0%{transform:scale(.9)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
 .choice-small{font-size:12.5px;padding:9px 13px}
 .wz-hint{font-size:12.5px;color:var(--text-3);margin-top:10px;line-height:1.6}
 .wz-nav{display:flex;gap:12px;margin-top:22px}
@@ -337,7 +339,7 @@ body{
           <label>数据单位</label>
           <select id="bf-unit" class="wz-input">
             <option value="10000" selected>万（例：3.25 万 → 填 3.25）</option>
-            <option value="100000000">亿（例：1.20 亿 → 填 1.20）</option>
+            <option value="1">个（例：直接填具体数字，如 3250000）</option>
           </select>
         </div>
         <div class="bench-field">
