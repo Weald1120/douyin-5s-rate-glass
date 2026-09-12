@@ -286,6 +286,25 @@ body{
   .card{padding:20px}
   .radar-wrap canvas{width:230px;height:230px}
 }
+/* ═══ 对标账号评估 · 表格式 ═══ */
+.bench-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.bench-grid{grid-template-columns:1fr}}
+.bench-field label{display:block;font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:6px}
+.bench-field .wz-input{width:100%}
+/* ═══ 违禁词检测 ═══ */
+.ban-mark{background:rgba(217,85,77,.16);color:#c2453d;border-radius:4px;padding:0 3px;font-weight:700}
+.ban-output{border-radius:16px;padding:16px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.9)}
+.ban-group{margin-bottom:14px}
+.ban-group:last-child{margin-bottom:0}
+.ban-group .gname{font-size:13px;font-weight:800;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ban-word{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:rgba(217,85,77,.12);border:1px solid rgba(217,85,77,.35);color:#c2453d;font-size:13px;font-weight:700;margin:0 8px 8px 0}
+.ban-tip{font-size:12.5px;color:var(--text-3);line-height:1.8;margin-top:4px}
+/* ═══ 起号方向推荐器 ═══ */
+.dir-res{border-radius:16px;padding:18px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.9)}
+.dir-main{font-size:18px;font-weight:800;background:linear-gradient(120deg,#3b4ca0,#3aa8e0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px}
+.dir-sub{font-size:14.5px;font-weight:700;color:var(--accent-deep);margin-bottom:12px}
+.dir-daily{font-size:13.5px;line-height:2;color:var(--text-2)}
+.dir-daily b{color:var(--text-1)}
 </style>
 </head>
 <body>
@@ -302,20 +321,46 @@ body{
   <!-- 工具导航 -->
   <nav class="tool-nav" id="tool-nav">
     <button class="tbtn active" data-panel="bench">🎯 对标账号评估</button>
+    <button class="tbtn" data-panel="ban">🚫 违禁词检测</button>
     <button class="tbtn" data-panel="predict">🎬 5秒完播率</button>
+    <button class="tbtn" data-panel="direct">🧭 起号方向</button>
     <button class="tbtn" data-panel="exam">📝 账号打造实战题</button>
   </nav>
 
-  <!-- ════════════ ① 对标账号评估（默认首屏） ════════════ -->
+  <!-- ════════════ ① 对标账号评估（默认首屏 · 表格式） ════════════ -->
   <section id="panel-bench" class="tool-panel active">
     <div class="glass card">
       <div class="card-title"><span class="t-icon">🎯</span>对标账号评估</div>
-      <div class="card-desc">填一个你准备长期拆解、模仿的对标账号，看看它到底值不值得抄、该抄什么、风险在哪。按你自己的判断选就行，不用查后台。</div>
-      <div class="wz-progress"><div class="wz-bar" id="b-bar" style="width:0%"></div></div>
-      <div id="b-body"></div>
-      <div class="wz-nav">
-        <button class="wz-back" id="b-back" disabled>← 上一步</button>
-        <button class="btn-primary" id="b-next" style="flex:1">下一步 →</button>
+      <div class="card-desc">填一个你准备长期拆解、模仿的对标账号的公开数据，看看它到底值不值得抄、该抄什么、风险在哪。不用查后台，按大概数据填就行。</div>
+      <div class="bench-grid" id="b-form">
+        <div class="bench-field" style="grid-column:1/-1">
+          <label>数据单位</label>
+          <select id="bf-unit" class="wz-input">
+            <option value="10000" selected>万（例：3.25 万 → 填 3.25）</option>
+            <option value="100000000">亿（例：1.20 亿 → 填 1.20）</option>
+          </select>
+        </div>
+        <div class="bench-field">
+          <label>总获赞</label>
+          <input id="bf-like" class="wz-input" type="number" inputmode="decimal" step="any" min="0" placeholder="例：3.25">
+        </div>
+        <div class="bench-field">
+          <label>粉丝数</label>
+          <input id="bf-fans" class="wz-input" type="number" inputmode="decimal" step="any" min="0" placeholder="例：1.20">
+        </div>
+        <div class="bench-field">
+          <label>第一条内容发布时间</label>
+          <input id="bf-start" class="wz-input" type="date">
+        </div>
+        <div class="bench-field">
+          <label>几天一更（更新频率）</label>
+          <input id="bf-freq" class="wz-input" type="number" inputmode="decimal" step="any" min="0" placeholder="例：3（每3天一条）">
+        </div>
+        <div class="bench-field" style="grid-column:1/-1">
+          <label>一共发了多少条视频</label>
+          <input id="bf-count" class="wz-input" type="number" inputmode="decimal" step="any" min="0" placeholder="例：80">
+        </div>
+        <button class="btn-primary" id="bf-run" style="grid-column:1/-1">评估这个账号</button>
       </div>
       <div class="finalize" id="b-result"></div>
     </div>
@@ -416,7 +461,39 @@ body{
 
   </section><!-- /panel-predict -->
 
-  <!-- ════════════ ③ 账号打造实战题 ════════════ -->
+  <!-- ════════════ ② 违禁词检测 ════════════ -->
+  <section id="panel-ban" class="tool-panel">
+    <div class="glass card">
+      <div class="card-title"><span class="t-icon">🚫</span>违禁词检测</div>
+      <div class="card-desc">发视频前先扫一遍：标题、文案、评论区引导话术都能贴进来。命中平台高度敏感的绝对化、功效承诺、收益诱导类词会标红提醒，并给出更稳妥的说法。</div>
+      <textarea id="ban-input" class="input-area" style="min-height:150px" placeholder="把你准备发布的标题 / 文案 / 简介粘贴到这里，例如：用了这个方法 7 天瘦 10 斤，保证不反弹，无效退款！"></textarea>
+      <div class="input-footer"><span id="ban-count">0 字</span><span>约 0 个违禁词</span></div>
+      <button class="glass btn-primary" id="ban-run" style="margin-top:12px"><span class="btn-label">开始检测违禁词</span></button>
+      <div id="ban-result"></div>
+    </div>
+  </section>
+
+  <!-- ════════════ ③ 起号方向推荐器 ════════════ -->
+  <section id="panel-direct" class="tool-panel">
+    <div class="glass card">
+      <div class="card-title"><span class="t-icon">🧭</span>起号方向推荐器</div>
+      <div class="card-desc">勾选你的资源条件（可多选），从课程讲的 8 个起号方向里推荐「主方向 + 辅助方向」组合，附每天拍什么。对应课程：第伍章「起号方向」。</div>
+      <div class="choice-grid" id="dir-choices">
+        <span class="choice" data-v="1">我自己有减肥成功的经历</span>
+        <span class="choice" data-v="2">身边有大体重亲友愿意出镜</span>
+        <span class="choice" data-v="3">我是本地实体商家 / 愿意跑门店地标</span>
+        <span class="choice" data-v="4">愿意做寻人启事这类互动玩法</span>
+        <span class="choice" data-v="5">想蹭热点模板</span>
+        <span class="choice" data-v="6">我有产品要展示</span>
+        <span class="choice" data-v="7">会用AI工具 / 不想出镜</span>
+        <span class="choice" data-v="8">只想做图文</span>
+      </div>
+      <button class="glass btn-primary" id="dir-run" style="margin-top:12px"><span class="btn-label">推荐组合</span></button>
+      <div id="dir-result"></div>
+    </div>
+  </section>
+
+  <!-- ════════════ ④ 账号打造实战题 ════════════ -->
   <section id="panel-exam" class="tool-panel">
     <div class="glass card">
       <div class="card-title"><span class="t-icon">📝</span>账号打造实战题</div>
@@ -1212,15 +1289,84 @@ function renderBChoiceState(){
     c.classList.toggle('sel',(bSel[k]||[]).includes(c.getAttribute('data-v')));
   });
 }
-document.getElementById('b-back').addEventListener('click',function(){
-  collectB();
-  if(bStep>0){bStep--;renderB();}
-});
-document.getElementById('b-next').addEventListener('click',function(){
-  collectB();
-  if(bStep<B_STEPS.length-1){bStep++;renderB();}
-  else{finishB();}
-});
+/* 对标账号评估 · 表格式（按用户示意截图） */
+function rs(id){const el=document.getElementById(id);return el?(parseFloat((el.value||'').replace(/[^\d.]/g,''))||0):0;}
+function fmtN(n){if(n>=1e8)return (n/1e8).toFixed(2).replace(/\.?0+$/,'')+'亿';if(n>=1e4)return (n/1e4).toFixed(2).replace(/\.?0+$/,'')+'万';return String(n);}
+function runBench(){
+  const unit=parseFloat(document.getElementById('bf-unit').value)||10000;
+  const likeRaw=rs('bf-like'),fansRaw=rs('bf-fans'),freq=rs('bf-freq');
+  const cnt=parseInt((document.getElementById('bf-count').value||'').replace(/[^\d]/g,''),10)||0;
+  const start=document.getElementById('bf-start').value;
+  const box=document.getElementById('bf-like');
+  if(!box.value.trim()){document.getElementById('b-result').innerHTML='<div class="ban-output">请至少填「总获赞」和「粉丝数」，数据越全评估越准。</div>';document.getElementById('b-result').style.display='block';return;}
+  const totalLike=Math.round(likeRaw*unit);
+  const totalFans=Math.round(fansRaw*unit);
+  const days=start?Math.max(0,Math.floor((Date.now()-new Date(start).getTime())/86400000)):0;
+  const avgLike=cnt>0?Math.round(totalLike/cnt):0;
+  const yearly=cnt>0&&days>0?Math.round(cnt/days*365):0;
+
+  let pts=0,tmp=[];
+  if(totalFans>0&&totalFans<10000){pts+=6;tmp.push('小而美的号，粉丝基数低但好抄，适合你从0模仿。');}
+  if(totalFans>=10000&&totalFans<=500000){pts+=20;tmp.push('粉丝在可抄黄金区间（1万-50万），传播力和可复制性都不错。');}
+  if(totalFans>500000){pts+=8;tmp.push('体量偏大，很可能已是团队+投流打法，个人难复制。');}
+  if(avgLike>0&&avgLike<1000){pts+=7;tmp.push('单条均赞不高，内容爆发力一般，抄结构和选题即可。');}
+  if(avgLike>=1000&&avgLike<20000){pts+=16;tmp.push('单条均赞不错，内容有稳定流量，值得拆选题和文案结构。');}
+  if(avgLike>=20000){pts+=10;tmp.push('单条均赞爆炸，爆款基因强，但多为概率打法，别整套硬抄。');}
+  if(freq>0&&freq<=1){pts+=8;tmp.push('日更级账号，拼的是量和时长，学它的排期勤奋度。');}
+  if(freq>1&&freq<=3){pts+=12;tmp.push('稳定2-3天一更，是可持续、能复制的更新节奏。');}
+  if(freq>3&&freq<=7){pts+=6;tmp.push('更新偏慢（'+freq+'天一更），流量链路容易被拖垮。');}
+  if(freq>7){pts+=0;tmp.push('更新太懒，这不是好节奏，别学它拖更。');}
+  if(yearly>=50&&yearly<=400){pts+=8;tmp.push('年产量健康（50-400条），一直在用内容喂算法。');}
+  if(yearly>400){pts+=4;tmp.push('年产量过高，疑似搬运/矩阵号，参考价值打折。');}
+  if(days>0&&days<90){pts+=4;tmp.push(cnt<=5?'起号不久内容还少，数据样本不足，先存疑观察。':'起号3个月内的新号，正在验证期，值得盯打法。');}
+  if(days>=90&&days<=730){pts+=10;tmp.push('运营半年到两年，模式和节奏已被验证，是可靠的抄样。');}
+  if(days>730){pts+=6;tmp.push('运营两年以上，惯性大，普通玩家难复制它的路线。');}
+
+  let score=Math.max(1,Math.min(10,Math.round(pts/9)));
+  let verdict,verdictSub;
+  if(score>=7.5){verdict='优质对标 · 值得长期拆解';verdictSub='数据、节奏、内容力都在线，是每天拆解研究的好模板。';}
+  else if(score>=5.5){verdict='可以抄 · 但要挑着抄';verdictSub='整体过关，但有短板，只抄它的强项，别整套照搬。';}
+  else{verdict='谨慎 · 建议再找找';verdictSub='这个对标对现阶段的你帮助有限，先别花大力气拆它。';}
+
+  const li=[];
+  if(freq>7)li.push({mk:'bad',txt:'更新频率太低（'+freq+'天一更），算法很难给它稳定量，别学这节奏。'});
+  if(freq>1&&freq<=3)li.push({mk:'good',txt:'更新节奏（'+freq+'天一更）稳定可复制，直接照抄排期。'});
+  if(avgLike>0&&avgLike<1000)li.push({mk:'warn',txt:'单条平均只有 '+avgLike+' 赞，内容没想象中强，挑单条特别火的看。'});
+  if(avgLike>=20000)li.push({mk:'warn',txt:'单条均赞过万，多半靠选题或投流，新手别整条硬抄。'});
+  if(totalFans>500000)li.push({mk:'warn',txt:'粉丝已达百万级，通常是大团队打法，个人很难复制它的增长路径。'});
+  if(days>0&&days<90&&cnt<=5)li.push({mk:'warn',txt:'内容太少、数据没跑出来，先当备选，别下重注。'});
+  if(yearly>400)li.push({mk:'warn',txt:'年产量超过400条，疑似搬运/矩阵，参考价值打折。'});
+  if((avgLike>0&&totalFans>0&&avgLike/totalFans>=0.2))li.push({mk:'good',txt:'单条均赞/粉丝比高，内容出圈能力强，值得深度拆选题。'});
+  if(li.length===0)li.push({mk:'good',txt:'数据看起来均衡，把它最近30天播放最高的10条拉出来拆：钩子、选题、结构。'});
+
+  const acts=[
+    '把它最近30天播放最高的10条逐条拆：前2秒钩子、选题、文案结构、封面。',
+    '做一张对标拆解表：账号名 / 粉丝 / 单条均赞 / 更新频率 / 变现方式 / 你抄什么，至少凑3个。',
+    score>=5.5?'以它为模板，30天内做20条同结构内容，再回来复盘数据。':'先放低标准：找一个1-20万粉、正在涨、你能轻松看懂的对标。'
+  ];
+
+  const r=Math.max(0.1,score/10),circ=2*Math.PI*46;
+  let html='';
+  html+=`<div class="eval-head"><div class="eval-ring"><svg width="108" height="108" viewBox="0 0 108 108">`
+    +`<defs><linearGradient id="evalGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3aa8e0"/><stop offset="100%" stop-color="#5e8cf0"/></linearGradient></defs>`
+    +`<circle cx="54" cy="54" r="46" fill="none" stroke="rgba(255,255,255,.65)" stroke-width="10"/>`
+    +`<circle cx="54" cy="54" r="46" fill="none" stroke="url(#evalGrad2)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ*(1-r)).toFixed(1)}"/>`
+    +`<text x="54" y="52" text-anchor="middle" font-size="27" font-weight="800" fill="rgba(20,32,66,.9)">${score}</text>`
+    +`<text x="54" y="70" text-anchor="middle" font-size="9" font-weight="600" fill="rgba(20,32,66,.55)">/10 值得抄</text></svg></div>`;
+  html+=`<div class="eval-verdict"><div class="eval-title">${verdict}</div>`
+    +`<div class="eval-sub">${fmtN(totalFans)}粉 · 均赞${avgLike} · ${freq>0?(freq+'天一更'):'频率未填'}</div>`
+    +`<div class="eval-sub" style="margin-top:6px">${verdictSub}</div></div></div>`;
+  html+=`<div class="eval-list">`;
+  li.forEach(x=>{const icon=x.mk==='good'?'✓':x.mk==='warn'?'!':'✗';html+=`<div class="li"><span class="mk ${x.mk}">${icon}</span><span>${x.txt}</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="eval-list"><div style="font-size:13px;font-weight:800;color:var(--accent-deep);margin:8px 0 2px">接下来这么做</div>`;
+  acts.forEach(a=>{html+=`<div class="li"><span class="mk good">→</span><span>${a}</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="cta-row"><button class="cta-mini" onclick="showTool('predict')">🎬 去测我的第一句话</button><button class="cta-mini" onclick="showTool('exam')">📝 去做完整账号方案</button></div>`;
+  const out=document.getElementById('b-result');
+  out.innerHTML=html;out.style.display='block';
+  if(window.__lgRefresh)requestAnimationFrame(window.__lgRefresh);
+}
 function collectB(){
   B_STEPS.forEach(s=>{
     if(s.type==='text'){
@@ -1304,8 +1450,8 @@ const QUIZ=[
   {g:'定位',q:'你帮谁？请具体到人群，不要只写"想减肥的人"。',ph:'例：产后妈妈 / 久坐上班族 / 反复减肥反弹的人',key:'q1',type:'text'},
   {g:'定位',q:'你主要帮他/她解决什么问题？一句话说清。',ph:'例：30天健康减脂、不反弹',key:'q2',type:'text'},
   {g:'定位',q:'凭什么信你？写出你的3条背书。',ph:'经历 / 案例 / 专业能力 各一条',key:'q3',type:'tri',labels:['背书1 · 经历','背书2 · 案例','背书3 · 专业能力']},
-  {g:'变现',q:'你的主要变现方式是什么？为什么？',ph:'私域 / 橱窗 / 直播 / 星图等。例：先做私域，客单价高、信任后好成交',key:'q4',type:'text'},
-  {g:'方向',q:'你准备选哪 2 个起号方向？写清"主攻 + 挑战"。',ph:'例：主攻「减脂干货口播」+ 挑战「真人出镜跟练」',key:'q5',type:'text'},
+  {g:'变现',q:'你的主要变现方式是什么？（4选1）',ph:'',key:'q4',type:'choice',multi:false,opts:['私域','橱窗','直播','星图']},
+  {g:'方向',q:'你准备选哪几个起号方向？（可多选，个人案例优先）',ph:'',key:'q5',type:'choice',multi:true,opts:['个人案例（晒自己真实减脂经历）','自己有案例（拿学员/身边人成功案例背书）','借力出镜（亲友/大体重朋友配合出镜）','同城门店（实体商家/跑门店地标）','互动玩法（寻人启事类话题）','蹭热点模板','产品展示（有产品直接拍）','工具图文（AI工具/不想出镜）']},
   {g:'一句话定位',q:'写出你的账号一句话定位（选填，最后会帮你自动生成草稿）。',ph:'我帮助____，解决____，凭借____',key:'q6',type:'tpl',labels:['帮助谁','解决什么','凭借什么']},
   {g:'对标',q:'写出至少 3 个准备长期拆解的对标账号。',ph:'优先最近3个月增长快、你能复制的账号',key:'q7',type:'tri',labels:['对标账号 1','对标账号 2','对标账号 3']},
   {g:'对标拆解',q:'从中选 1 个：它为什么火？怎么赚钱？你准备复制什么？',ph:'例：人设真实+选题扎心 → 私域卖课 → 复制它的口播结构',key:'q8',type:'text'},
@@ -1344,15 +1490,47 @@ function renderE(){
       html+=`<div class="tri-item"><label>${lb}</label><input class="wz-input wz-input-sm" id="ein-${s.key}-${i}" placeholder="${s.ph}"></div>`;
     });
     html+='</div>';
+  }else if(s.type==='choice'){
+    const cur=eAns[s.key];
+    html+='<div class="choice-grid">';
+    s.opts.forEach(o=>{
+      const on=s.multi?(cur||[]).includes(o):(cur===o);
+      html+=`<span class="choice ${on?'sel':''}" data-e="${s.key}" data-v="${o}">${o}</span>`;
+    });
+    html+='</div>';
   }
-  html+=`<div class="wz-hint">${s.type==='tri'||s.type==='tpl'?'每一栏都填，方案才完整。':'想不出来先留白，最后会标出来提醒你补。'}</div>`;
+  html+=`<div class="wz-hint">${s.type==='tri'||s.type==='tpl'?'每一栏都填，方案才完整。':s.type==='choice'?'直接点选项，可多选就多选。':'想不出来先留白，最后会标出来提醒你补。'}</div>`;
   document.getElementById('e-body').innerHTML=html;
   document.getElementById('e-back').disabled=(eStep===0);
   document.getElementById('e-next').innerHTML=(eStep===total-1)?'生成我的账号方案 🎉':'下一步 →';
   if(eStep===0)setBar('e-bar',4);
+  // 选项点击
+  document.querySelectorAll('#e-body .choice').forEach(c=>{
+    c.addEventListener('click',function(){
+      const k=this.getAttribute('data-e'),v=this.getAttribute('data-v');
+      const s=QUIZ.find(x=>x.key===k);
+      if(!s)return;
+      if(s.multi){
+        if(!eAns[k])eAns[k]=[];
+        const i=eAns[k].indexOf(v);
+        if(i>=0)eAns[k].splice(i,1);else eAns[k].push(v);
+      }else{
+        eAns[k]=v;
+      }
+      renderEChoiceState();
+    });
+  });
   // focus
   const first=document.querySelector('#e-body input,#e-body textarea');
   if(first&&!first.value)first.focus();
+}
+function renderEChoiceState(){
+  document.querySelectorAll('#e-body .choice').forEach(c=>{
+    const k=c.getAttribute('data-e'),v=c.getAttribute('data-v');
+    const s=QUIZ.find(x=>x.key===k);
+    const cur=eAns[k];
+    c.classList.toggle('sel',s&&s.multi?(cur||[]).includes(v):(cur===v));
+  });
 }
 function collectE(){
   QUIZ.forEach(s=>{
@@ -1392,7 +1570,7 @@ function finishE(){
   const secDefs=[
     {g:'定位',qs:[['q1','你帮谁'],['q2','解决什么问题'],['q3','3条背书']]},
     {g:'变现',qs:[['q4','主要变现方式']]},
-    {g:'起号方向',qs:[['q5','主攻 + 挑战']]},
+    {g:'起号方向',qs:[['q5','起号方向']]},
     {g:'对标',qs:[['q7','对标账号'],['q8','对标拆解']]},
     {g:'内容',qs:[['q9','第一条视频前2秒钩子'],['q10','模仿谁、模仿什么']]},
     {g:'数据自查',qs:[['q11','曝光高播放低怎么办'],['q12','播放好完播差查哪里'],['q13','有播放没咨询排查']]},
@@ -1405,7 +1583,9 @@ function finishE(){
     sec.qs.forEach(([key,label])=>{
       const s=QUIZ.find(x=>x.key===key);
       if(!filledQ(s))return;
-      inner+=`<div class="pa"><span class="pa-q">${label}</span>${esc(s.type==='text'?eAns[key]:txt(eAns[key]))}</div>`;
+      const vv=eAns[key];
+      const disp=(typeof vv==='string')?vv:txt(vv);
+      if(disp)inner+=`<div class="pa"><span class="pa-q">${label}</span>${esc(disp)}</div>`;
     });
     if(inner)blocks+=`<div class="plan-block"><div class="plan-sec">${sec.g}</div>${inner}</div>`;
   });
@@ -1434,7 +1614,7 @@ function buildPlanTxt(pos){
   const secDefs=[
     {g:'【定位】',qs:[['q1','你帮谁：'],['q2','解决什么问题：'],['q3','3条背书：']]},
     {g:'【变现】',qs:[['q4','主要变现方式：']]},
-    {g:'【起号方向】',qs:[['q5','主攻+挑战：']]},
+    {g:'【起号方向】',qs:[['q5','起号方向：']]},
     {g:'【对标】',qs:[['q7','对标账号：'],['q8','对标拆解：']]},
     {g:'【内容】',qs:[['q9','第一条视频前2秒钩子：'],['q10','模仿谁模仿什么：']]},
     {g:'【数据自查】',qs:[['q11','曝光高播放低：'],['q12','完播差查哪里：'],['q13','没咨询排查：']]},
@@ -1446,7 +1626,7 @@ function buildPlanTxt(pos){
       const s=QUIZ.find(x=>x.key===key);
       const v=eAns[s.key];
       if(!v)return;
-      const val=s.type==='text'?(v||'').trim():txt(v);
+      const val=(typeof v==='string')?(v||'').trim():txt(v);
       if(val)arr.push(label+val);
     });
     if(arr.length){L.push(sec.g);arr.forEach(a=>L.push('  '+a));L.push('');}
@@ -1478,8 +1658,113 @@ function resetE(){
   renderE();
 }
 
-// 默认首屏：对标账号评估（面板已 active），先渲染第一步
-renderB();
+/* ───────────── ② 违禁词检测 ───────────── */
+const BAN_GROUPS=[
+  {name:'绝对化 / 夸张',words:['绝对','第一','最好','最强','唯一','顶级','国家级','100%','百分百','万能','绝无仅有','全网第一','必备神器','史上最'],tip:'平台要求去绝对化，把「最好/最强」换成「更适合、更稳、更省心」这类主观说法。'},
+  {name:'减肥功效 / 医疗词',words:['治愈','根治','药效','疗效','治疗','溶脂','排毒','燃脂','瘦身特效','医用','医生推荐','秘方','偏方','代替药物','减肥药'],tip:'健康/减脂类不能承诺疗效，更不能像药品宣传。改成「记录我的过程」而不是「包你瘦」。'},
+  {name:'承诺保证 / 数字承诺',words:['保证瘦','包瘦','无效退款','7天瘦','5天瘦','7天见效','月瘦','躺着瘦','不反弹','轻松瘦','立刻见效','马上瘦','一定瘦','瘦10斤'],tip:'效果承诺、具体天数、无效退款都是高危词。改成「我的真实过程」「XX天记录贴」，别打包票。'},
+  {name:'收益诱导',words:['躺赚','日入过万','月入过万','稳赚','暴富','一夜暴富','零投入高回报','跟着做就能赚'],tip:'用钱开路、躺赚话术容易判定为诱导或导流。改成「我是怎么变现的」客观分享。'},
+  {name:'引流 / 导流词',words:['加微信','加V','加v','公众号','扫码领取','免费领取到朋友圈','私信领资料','评论区扣1','点击链接','主页简介','V信','v信'],tip:'直接导流到站外、诱导私信都会被限流。改成「关注我，后续干货继续更」。'}
+];
+function countBan(t){let n=0;BAN_GROUPS.forEach(g=>g.words.forEach(w=>{if(t.toLowerCase().indexOf(w.toLowerCase())>=0)n++;}));return n;}
+function markBan(t,hits){
+  const all=[];hits.forEach(h=>h.words.forEach(w=>all.push(w)));
+  all.sort((a,b)=>b.length-a.length);
+  let html=(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  all.forEach(w=>{const re=new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');html=html.replace(re,'<span class="ban-mark">$1</span>');});
+  return html;
+}
+function runBan(){
+  const box=document.getElementById('ban-input');
+  const t=box.value;
+  const out=document.getElementById('ban-result');
+  if(!t.trim()){out.innerHTML='<div class="ban-output">先把要发布的文案粘贴进来再检测。</div>';return;}
+  const hits=[];let total=0;
+  BAN_GROUPS.forEach(g=>{
+    const found=g.words.filter(w=>t.toLowerCase().indexOf(w.toLowerCase())>=0);
+    if(found.length){total+=found.length;hits.push({name:g.name,words:found,tip:g.tip});}
+  });
+  let html='';
+  if(total===0){
+    html+=`<div class="ban-output"><div style="font-size:14px;font-weight:800;color:#2e9e6b">✅ 未命中常见违禁词</div><div class="ban-tip">没扫到高危词。但平台审核有随机性，建议仍避开「最、第一、保证、绝对」这类字眼，稳妥发布。</div></div>`;
+  }else{
+    html+=`<div class="ban-output">`;
+    html+=`<div style="font-size:14px;font-weight:800;color:#c2453d">⚠️ 命中 ${total} 个违禁词，发布前务必改掉</div>`;
+    html+=`<div style="margin:10px 0 4px;font-size:13px;font-weight:700;color:var(--text-2)">原文标红预览：</div>`;
+    html+=`<div style="line-height:2.1;font-size:14px">${markBan(t,hits)}</div>`;
+    hits.forEach(h=>{
+      html+=`<div class="ban-group"><div class="gname">▍${h.name}</div>`;
+      h.words.forEach(w=>{html+=`<span class="ban-word">${w}</span>`;});
+      html+=`<div class="ban-tip">${h.tip}</div></div>`;
+    });
+    html+=`</div>`;
+  }
+  out.innerHTML=html;
+  if(window.__lgRefresh)requestAnimationFrame(window.__lgRefresh);
+}
+
+/* ───────────── ③ 起号方向推荐器 ───────────── */
+const DIR_OPTS=[
+  {id:1,label:'我自己有减肥成功的经历',main:'个人案例号',mainDesc:'晒自己的真实减脂经历与前后对比，减肥赛道最稳的信任型打法。'},
+  {id:2,label:'身边有大体重亲友愿意出镜',main:'借力出镜号',mainDesc:'拉亲友/大体重朋友一起出镜，做「带练」和「见证」内容，真实感拉满。'},
+  {id:3,label:'我是本地实体商家 / 愿意跑门店地标',main:'同城门店号',mainDesc:'围绕门店、同城地标做背书内容，靠信任+同城流量吃门店生意。'},
+  {id:4,label:'愿意做寻人启事这类互动玩法',main:'互动玩法号',mainDesc:'用寻人启事、征集等互动型选题撬动评论和转发，快起流量。'},
+  {id:5,label:'想蹭热点模板',main:'热点模板号',mainDesc:'借时令热点/爆款模板快速起量，先跑量再沉淀人设。'},
+  {id:6,label:'我有产品要展示',main:'产品展示号',mainDesc:'直接拍产品卖点/使用过程，内容即广告，转化路径最短。'},
+  {id:7,label:'会用AI工具 / 不想出镜',main:'工具图文号',mainDesc:'用AI工具产出图文/口播稿，不出镜也能批量出内容。'},
+  {id:8,label:'只想做图文',main:'轻量图文号',mainDesc:'图文笔记起号成本最低，适合先跑通选题和内容感觉。'}
+];
+const DIR_DAILY={
+  1:'① 早上记录：起床体重/身体感受；② 中午30秒跟练实拍；③ 晚上口播复盘：今天为什么瘦/为什么没掉秤（真实最重要）。',
+  2:'① 拍一段和亲友的日常互动/带练实拍；② 记录对方「第N天改变」素材；③ 口播回应一个减肥误区，挂上你的见证例子。',
+  3:'① 门店实拍一段（环境/服务/顾客真实反馈)；② 拍一个同城话题；③ 展示你的产品/服务的解决过程。',
+  4:'① 一条寻人启事/征集类选题互动贴；② 针对转发热度高的内容做回应；③ 沉淀到日常口播，把流量导回账号主线。',
+  5:'① 追当天热点做一条同模板内容；② 拆爆款开头3秒，做成自己的版本；③ 复盘数据，把跑得最好的题材固化成系列。',
+  6:'① 产品特写/使用过程实拍；② 解答一个和产品相关的常见疑问；③ 拍「顾客用后反馈」真实内容。',
+  7:'① 用AI工具生成2条图文/口播稿；② 不出镜也能发：图文笔记+干货盘点；③ 固定时间批量发布，保持日更节奏。',
+  8:'① 做1条图文干货笔记；② 从评论区/私信收集选题；③ 用简单模板把内容做成系列，先跑量再升级视频。'
+};
+function runDir(){
+  const sel=[];
+  document.querySelectorAll('#dir-choices .choice.sel').forEach(c=>sel.push(parseInt(c.getAttribute('data-v'),10)));
+  const out=document.getElementById('dir-result');
+  if(sel.length===0){out.innerHTML='<div class="dir-res">至少勾 1 个你的资源条件，才推荐得了方向。</div>';return;}
+  const order=['1','2','3','4','6','5','7','8'];
+  const sorted=sel.slice().sort((a,b)=>order.indexOf(''+a)-order.indexOf(''+b));
+  const mainId=sorted[0];
+  const auxId=sorted[1]||null;
+  const main=DIR_OPTS.find(o=>o.id===mainId);
+  const aux=auxId?DIR_OPTS.find(o=>o.id===auxId):null;
+  let html='';
+  html+=`<div class="dir-res">`;
+  html+=`<div class="dir-main">主方向：${main.main}</div>`;
+  html+=`<div class="dir-sub">${main.mainDesc}</div>`;
+  if(aux){html+=`<div class="dir-sub">＋ 辅助方向：${aux.main}（${aux.mainDesc}）</div>`;}
+  else if(sorted[0]===1){html+=`<div class="dir-sub">＋ 辅助方向建议：搭配「同城门店」或「蹭热点模板」，给个人案例号补流量入口。</div>`;}
+  else{html+=`<div class="dir-sub">＋ 辅助方向建议：再勾一个有流量入口的方向（如蹭热点 / 互动玩法），组合更稳。</div>`;}
+  html+=`<div class="dir-daily"><b>每天拍什么：</b>${DIR_DAILY[mainId]||''}`;
+  if(aux)html+=`<br><b>每周拿出一条：</b>做辅助方向的「${aux.main}」内容，测试第二流量曲线。`;
+  html+=`</div></div>`;
+  out.innerHTML=html;
+  if(window.__lgRefresh)requestAnimationFrame(window.__lgRefresh);
+}
+
+/* ───────────── 初始化 ───────────── */
+function initAll(){
+  const bf=document.getElementById('bf-run');if(bf)bf.addEventListener('click',runBench);
+  const bn=document.getElementById('ban-run');if(bn)bn.addEventListener('click',runBan);
+  const bi=document.getElementById('ban-input');
+  if(bi)bi.addEventListener('input',function(){
+    const c=document.getElementById('ban-count');if(c)c.textContent=this.value.length+' 字';
+    const foot=document.querySelector('#panel-ban .input-footer span:last-child');
+    if(foot)foot.textContent='约 '+countBan(this.value)+' 个违禁词';
+  });
+  const dr=document.getElementById('dir-run');if(dr)dr.addEventListener('click',runDir);
+  document.querySelectorAll('#dir-choices .choice').forEach(c=>{
+    c.addEventListener('click',function(){this.classList.toggle('sel');});
+  });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initAll);else initAll();
 </script>
 
 </body>
